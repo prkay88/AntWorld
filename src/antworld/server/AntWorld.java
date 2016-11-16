@@ -510,8 +510,7 @@ public class AntWorld implements ActionListener
 
     if (wallClock >= lastRestoreTime + RESTORE_FREQUENCY)
     {
-      WorldRestore.saveRestorePoint(world, nestList, foodSpawnList,
-        gameTick);
+      //WorldRestore.saveRestorePoint(world, nestList, foodSpawnList, gameTick);
       lastRestoreTime = wallClock;
     }
   }
