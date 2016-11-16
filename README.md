@@ -1,9 +1,9 @@
 # AntWorld
-In groups of 2, write a client that connects to the Ant World server and intelligently manages an ant colony.<br><br>
+In groups of 2, write a client that connects to the Ant World server and intelligently manages an ant colony.<br>
 
-For grades of D, C, B, and A, you need to lose to, tie, beat or definitely beat the an unknown, instructor written AI of moderate smarts.<br><br>
+For grades of D, C, B, and A, you need to lose to, tie, beat or definitely beat the an unknown, instructor written AI of moderate smarts.<br>
 
-Winning is defined as the score calculated from the total food your team has brought to the nest and your nest's ant population.<br><br>
+Winning is defined as the score calculated from the total food your team has brought to the nest and your nest's ant population.<br>
 
 
 To COMPILE:<br>
@@ -16,21 +16,23 @@ Modules -> Sources -><br>
    <li>Resource Folders: resources</li>
 </ul>
 
-Modules -> Dependencies -> 
-   1.8 (java)
-   <Module source>
-   
-   
-To RUN:
-First, start the server:
-   antworld.server.AntWorld.main(String[] args)
-   
-When the server is ready for a client it will display in the console:
-Server: socket opened on port 12321
-Server: waiting for client connection.....
 
-Then, start your client. To get started, you can use the sample client:
-  antworld.client.ClientRandomWalk.main(String[] args)
+Modules -> Dependencies -> <br>
+<ul>
+   <li>  1.8 (java)</li>
+   <li>  Module source</li>
+</ul>   <br>
+   
+To RUN:<br>
+First, start the server:<br>
+   antworld.server.AntWorld.main(String[] args)<br><br>
+   
+When the server is ready for a client it will display in the console:<br>
+Server: socket opened on port 12321<br>
+Server: waiting for client connection.....<br>
+
+Then, start your client. To get started, you can use the sample client:<br>
+  antworld.client.ClientRandomWalk.main(String[] args)<br>
 
   If args is null or length < 1, then the client will try to connect on localhost.
   Otherwise, args[0] will be used as the hostname.
