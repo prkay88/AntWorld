@@ -1,18 +1,20 @@
 # AntWorld
-In groups of 2, write a client that connects to the Ant World server and intelligently manages an ant colony.
+In groups of 2, write a client that connects to the Ant World server and intelligently manages an ant colony.<br><br>
 
-For grades of D, C, B, and A, you need to lose to, tie, beat or definitely beat the an unknown, instructor written AI of moderate smarts.
+For grades of D, C, B, and A, you need to lose to, tie, beat or definitely beat the an unknown, instructor written AI of moderate smarts.<br><br>
 
-Winning is defined as the score calculated from the total food your team has brought to the nest and your nest's ant population.
+Winning is defined as the score calculated from the total food your team has brought to the nest and your nest's ant population.<br><br>
 
 
-To COMPILE:
-I did not include the .idea configure file since some of the setting are platform specific.
-After you create an IntelliJ project with the repo source, you will need to go into Project Structure and set
-Modules -> Sources ->
-   Content Root: yourpath\AntWorld
-   Source Folders: src
-   Resource Folders: resources
+To COMPILE:<br>
+I did not include the .idea configure file since some of the setting are platform specific.<br>
+After you create an IntelliJ project with the repo source, you will need to go into Project Structure and set<br>
+Modules -> Sources -><br>
+<ul>
+   <li>Content Root: yourpath\AntWorld</li>
+   <li>Source Folders: src</li>
+   <li>Resource Folders: resources</li>
+</ul>
 
 Modules -> Dependencies -> 
    1.8 (java)
