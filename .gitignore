@@ -1,0 +1,39 @@
+.git
+out
+_windows
+bin
+*.iml
+.classpath
+doc
+restore/*.dat
+*~
+.DS_Store
+## File-based project format:
+*.ipr
+*.iws
+
+#IntelliJ IDE project config
+.idea/
+#Eclipse IDE project config
+.settings/
+#Eclipse IDE project config
+.project/
+
+# the dataSources folder is raw data not directly used by the project.
+dataSources
+
+# ignore class files
+*.class
+
+# emacs temp files
+\#*\#
+.\#*
+
+dist/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+/Lab8JavaFx/nbproject/private/
