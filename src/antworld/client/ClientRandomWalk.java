@@ -111,7 +111,8 @@ public class ClientRandomWalk
     while (myNestName == null)
     {
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
-        
+
+      //Pick a new nest when retrying. One common reason for a fail is that the requested nest is already taken.
       NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
       CommData data = new CommData(requestedNest, myTeam);
       data.password = password;
