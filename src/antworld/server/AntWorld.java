@@ -61,7 +61,9 @@ public class AntWorld implements ActionListener
     JFrame window = drawPanel.window;
 
     // BufferedImage map = loadImage("small.png", window);
-    BufferedImage map = Util.loadImage("AntWorld.png", window);
+    //TODO: AntWorld.png is changed into SmallMap1.png
+//    BufferedImage map = Util.loadImage("AntWorld.png", window);
+    BufferedImage map = Util.loadImage("SmallMap2.png", window);
     worldWidth = map.getWidth();
     worldHeight = map.getHeight();
     readAntWorld(map);

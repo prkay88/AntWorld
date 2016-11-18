@@ -15,6 +15,7 @@ import antworld.common.Direction;
 import antworld.common.NestNameEnum;
 import antworld.common.TeamNameEnum;
 import antworld.common.AntAction.AntActionType;
+import jdk.nashorn.internal.runtime.regexp.joni.ast.ConsAltNode;
 
 public class ClientRandomWalk
 {
@@ -25,8 +26,9 @@ public class ClientRandomWalk
   private ObjectOutputStream outputStream = null;
   private boolean isConnected = false;
   private NestNameEnum myNestName = null;
+//  private NestNameEnum myNestName = NestNameEnum.ARMY;
   private int centerX, centerY;
- 
+
 
   private Socket clientSocket;
 
@@ -111,12 +113,12 @@ public class ClientRandomWalk
     while (myNestName == null)
     {
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
-
-      //Pick a new nest when retrying. One common reason for a fail is that the requested nest is already taken.
-      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
+      //TODO: Uncomment for proper behavior
+//      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
+      NestNameEnum requestedNest = NestNameEnum.ARMY;
       CommData data = new CommData(requestedNest, myTeam);
       data.password = password;
-      
+
       if( sendCommData(data) )
       {
         try
@@ -124,13 +126,13 @@ public class ClientRandomWalk
           if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
           CommData recvData = (CommData) inputStream.readObject();
           if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + recvData);
-          
+
           if (recvData.errorMsg != null)
           {
             System.err.println("ClientRandomWalk***ERROR***: " + recvData.errorMsg);
             continue;
           }
-  
+
           if ((myNestName == null) && (recvData.myTeam == myTeam))
           { myNestName = recvData.myNest;
             centerX = recvData.nestData[myNestName.ordinal()].centerX;
@@ -152,33 +154,33 @@ public class ClientRandomWalk
     }
     return null;
   }
-    
+
   public void mainGameLoop(CommData data)
   {
     while (true)
-    { 
+    {
       try
       {
 
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
 
-        chooseActionsOfAllAnts(data);  
+        chooseActionsOfAllAnts(data);
 
         CommData sendData = data.packageForSendToServer();
-        
+
         System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
         outputStream.writeObject(sendData);
         outputStream.flush();
         outputStream.reset();
-       
+
 
         if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
         CommData receivedData = (CommData) inputStream.readObject();
         if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + receivedData);
         data = receivedData;
-  
-        
-        
+
+
+
         if ((myNestName == null) || (data.myTeam != myTeam))
         {
           System.err.println("ClientRandomWalk: !!!!ERROR!!!! " + myNestName);
@@ -200,18 +202,18 @@ public class ClientRandomWalk
 
     }
   }
-  
-  
+
+
   private boolean sendCommData(CommData data)
   {
-    
+
     CommData sendData = data.packageForSendToServer();
     try
     {
       if (DEBUG) System.out.println("ClientRandomWalk.sendCommData(" + sendData +")");
-      outputStream.writeObject(sendData);
-      outputStream.flush();
-      outputStream.reset();
+      outputStream.writeObject(sendData); //Where data is sent to server?
+      outputStream.flush(); //Flush so java won't coalesce objects
+      outputStream.reset(); //resets it as well
     }
     catch (IOException e)
     {
@@ -221,14 +223,38 @@ public class ClientRandomWalk
     }
 
     return true;
-    
+
   }
 
   private void chooseActionsOfAllAnts(CommData commData)
   {
+    //sets the actions effectively editing the CommData before being sent to the server for each ants
     for (AntData ant : commData.myAntList)
     {
+      //but, we want ants to not always have the same action
       AntAction action = chooseAction(commData, ant);
+      //effectively exit nest:
+      if(ant.underground)
+      {
+        int dir = random.nextInt(2); //random between 0 and 1
+        if(dir == 0)
+        {
+          action.x = centerX+9;
+          action.y = centerY+9;
+        }
+        else if(dir == 1)
+        {
+          action.x = centerX-9;
+          action.y = centerY-9;
+        }
+        action.type = AntActionType.EXIT_NEST;
+      }
+      else
+      {
+        //have two lines then explore!
+        goExplore(ant, new AntAction(AntActionType.STASIS));
+      }
+
       ant.myAction = action;
     }
   }
@@ -245,11 +271,26 @@ public class ClientRandomWalk
   {
     if (ant.underground)
     {
+      //can only set action.x and action.y in coordinates within the nest
+//      int dir = random.nextInt(2); //random between 0 and 1
+//      if(dir == 0)
+//      {
+//        action.x = centerX+9;
+//        action.y = centerY+9;
+//      }
+//      else if(dir == 1)
+//      {
+//        action.x = centerX-9;
+//        action.y = centerY-9;
+//      }
       action.type = AntActionType.EXIT_NEST;
-      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
+      action.x = centerX+9;
+      action.y = centerY+9;
+//      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
+//      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
       return true;
     }
+//    System.out.println("Exiting:");
     return false;
   }
 
@@ -291,7 +332,9 @@ public class ClientRandomWalk
 
   private boolean goExplore(AntData ant, AntAction action)
   {
-    Direction dir = Direction.getRandomDir();
+    //make them move North East all the time
+//    Direction dir = Direction.getRandomDir();
+    Direction dir = Direction.NORTHEAST;
     action.type = AntActionType.MOVE;
     action.direction = dir;
     return true;
@@ -301,10 +344,10 @@ public class ClientRandomWalk
   private AntAction chooseAction(CommData data, AntData ant)
   {
     AntAction action = new AntAction(AntActionType.STASIS);
-    
+
     if (ant.ticksUntilNextAction > 0) return action;
 
-    if (exitNest(ant, action)) return action;
+    if (exitNest(ant, action)) return action; //always exit nest first
 
     if (attackAdjacent(ant, action)) return action;
 
