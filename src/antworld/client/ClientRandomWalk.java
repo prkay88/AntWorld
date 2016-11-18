@@ -163,7 +163,6 @@ public class ClientRandomWalk
       {
 
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
-
         chooseActionsOfAllAnts(data);
 
         CommData sendData = data.packageForSendToServer();
@@ -175,6 +174,7 @@ public class ClientRandomWalk
 
 
         if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
+        //TODO: Server gives us this:
         CommData receivedData = (CommData) inputStream.readObject();
         if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + receivedData);
         data = receivedData;
@@ -233,28 +233,6 @@ public class ClientRandomWalk
     {
       //but, we want ants to not always have the same action
       AntAction action = chooseAction(commData, ant);
-      //effectively exit nest:
-      if(ant.underground)
-      {
-        int dir = random.nextInt(2); //random between 0 and 1
-        if(dir == 0)
-        {
-          action.x = centerX+9;
-          action.y = centerY+9;
-        }
-        else if(dir == 1)
-        {
-          action.x = centerX-9;
-          action.y = centerY-9;
-        }
-        action.type = AntActionType.EXIT_NEST;
-      }
-      else
-      {
-        //have two lines then explore!
-        goExplore(ant, new AntAction(AntActionType.STASIS));
-      }
-
       ant.myAction = action;
     }
   }
@@ -284,10 +262,10 @@ public class ClientRandomWalk
 //        action.y = centerY-9;
 //      }
       action.type = AntActionType.EXIT_NEST;
-      action.x = centerX+9;
-      action.y = centerY+9;
-//      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-//      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
+//      action.x = centerX+9;
+//      action.y = centerY+9;
+      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
+      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
       return true;
     }
 //    System.out.println("Exiting:");
@@ -334,7 +312,7 @@ public class ClientRandomWalk
   {
     //make them move North East all the time
 //    Direction dir = Direction.getRandomDir();
-    Direction dir = Direction.NORTHEAST;
+    Direction dir = Direction.EAST;
     action.type = AntActionType.MOVE;
     action.direction = dir;
     return true;

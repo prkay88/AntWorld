@@ -52,6 +52,8 @@ public class AntWorld implements ActionListener
   private ArrayList<FoodSpawnSite> foodSpawnList;
   private static int gameTick = 0;
 
+  private boolean DEBUG = true;
+
   public AntWorld(boolean showGUI, String restorePoint)
   {
     this.showGUI = showGUI;
@@ -438,7 +440,10 @@ public class AntWorld implements ActionListener
     wallClock = System.currentTimeMillis();
     gameTick++;
 
-    if (random.nextDouble() < 0.01)
+    boolean chance = true;
+
+    //TODO: If DEBUG = true, then you always spawn the food
+    if (DEBUG || random.nextDouble() < 0.01)
     {
       int foodSiteIdx = random.nextInt(foodSpawnList.size());
       foodSpawnList.get(foodSiteIdx).spawn(this);
@@ -519,9 +524,12 @@ public class AntWorld implements ActionListener
 
   private void createFoodSpawnSites()
   {
+
     foodSpawnList = new ArrayList<FoodSpawnSite>();
 
-    int totalSitesToSpawn = nestList.size()/2;
+    //TODO: uncomment for proper behavior:
+//    int totalSitesToSpawn = nestList.size()/2;
+    int totalSitesToSpawn = 1;
     while (totalSitesToSpawn > 0)
     {
       int nestIdx1 = random.nextInt(nestList.size());
@@ -530,8 +538,15 @@ public class AntWorld implements ActionListener
 
       Nest nest1 = nestList.get(nestIdx1);
       Nest nest2 = nestList.get(nestIdx2);
+
       int spawnX = (int)(weight*nest1.getCenterX() + (1-weight)*nest2.getCenterX());
       int spawnY = (int)(weight*nest1.getCenterY() + (1-weight)*nest2.getCenterY());
+
+      if(DEBUG)
+      {
+        spawnX = 209 + 30; //xCenter of ARMY ant nest spawn + 30 units to the right.
+        spawnY = 489;    //yCenter of ARMY ant nest.
+      }
 
       if (world[spawnX][spawnY].getLandType() == LandType.GRASS)
       {

@@ -25,6 +25,7 @@ public class FoodSpawnSite implements Serializable
   private int activeFoodPileCount = 0;
   private boolean needSpawn = true;
   private ArrayList<FoodData> foodPileList = new ArrayList<>();
+  private boolean DEBUG = true;
   
   public FoodSpawnSite(FoodType type, int x, int y, int totalNestCount)
   { 
@@ -73,10 +74,16 @@ public class FoodSpawnSite implements Serializable
 
     while(spawnCount < spawnGoal)
     {
-      int count = (20 + AntWorld.random.nextInt(400)); 
-      
+      int count = (20 + AntWorld.random.nextInt(400));
+      //TODO: If debug, then x and y location becomes the actual food spawn site
       x = locationX + random.nextInt(SPAWN_RADIUS) - random.nextInt(SPAWN_RADIUS);
       y = locationY + random.nextInt(SPAWN_RADIUS) - random.nextInt(SPAWN_RADIUS);
+
+      if(DEBUG)
+      {
+        x = locationX;
+        y = locationY;
+      }
       count *= quantityMultiplier;
 
       
