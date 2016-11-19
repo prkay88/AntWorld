@@ -242,8 +242,8 @@ public class ClientRandomWalk
       testAI.setAntData(ant);
       ant.myAction =testAI.chooseAction();
       //but, we want ants to not always have the same action
-      //AntAction action = chooseAction(commData, ant);
-      //ant.myAction = action;
+      //AntAction action = chooseAction(commData, antAction);
+      //antAction.myAction = action;
 
     }
     for (FoodData f : commData.foodSet)
@@ -254,7 +254,7 @@ public class ClientRandomWalk
 
   //=============================================================================
   // This method sets the given action to EXIT_NEST if and only if the given
-  //   ant is underground.
+  //   antAction is underground.
   // Returns true if an action was set. Otherwise returns false
   //=============================================================================
   private boolean exitNest(AntData ant, AntAction action)
@@ -266,21 +266,21 @@ public class ClientRandomWalk
 //      action.y = centerY+9;
 //      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
 //      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-      //we are debugging if initial ant spawn count is 2
+      //we are debugging if initial antAction spawn count is 2
 
       //TODO: might want a better name
-      if(antsMovingEast == 0)
-      {
+//      if(antsMovingEast == 0)
+//      {
         action.x = centerX + 9;
-        action.y = centerY + 2;
-        antsMovingEast++;
-      }
-      else if(antsMovingEast == 1)
-      {
-        action.x = centerX + 8;
-        action.y = centerY + 1;
-        antsMovingEast = 0;
-      }
+        action.y = centerY;
+//        antsMovingEast++;
+//      }
+//      else if(antsMovingEast == 1)
+//      {
+//        action.x = centerX + 8;
+//        action.y = centerY + 1;
+//        antsMovingEast = 0;
+//      }
       return true;
     }
     return false;
@@ -398,13 +398,13 @@ public class ClientRandomWalk
 
   private boolean goExplore(AntData ant, AntAction action, CommData data)
   {
-    if(data.foodSet.size() > 0)
-    {
-      return false;
-    }
+//    if(data.foodSet.size() > 0)
+//    {
+//      return false;
+//    }
     //make them move North East all the time
 //    Direction dir = Direction.getRandomDir();
-    Direction dir = Direction.NORTHEAST;
+    Direction dir = Direction.EAST;
     action.type = AntActionType.MOVE;
 //    if(antsMovingEast == 0)
 //    {
@@ -430,7 +430,7 @@ public class ClientRandomWalk
 
     if (goExplore(ant, action, data)) return action;
 
-    if (goToFood(ant, action, data)) return action;
+//    if (goToFood(antAction, action, data)) return action;
 
     if (goHomeIfCarryingOrHurt(ant, action)) return action;
 

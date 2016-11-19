@@ -3,7 +3,6 @@ package antworld.client;
 import antworld.common.AntAction;
 import antworld.common.AntData;
 import antworld.common.CommData;
-import antworld.common.Direction;
 
 import java.util.Random;
 
@@ -17,7 +16,7 @@ public class AI {
     Random random = new Random();
     int centerX;
     int centerY;
-    AntAction ant;
+    AntAction antAction;
     AntData antData;
 
     public AI() {
@@ -25,22 +24,22 @@ public class AI {
     }
 
     public AI(CommData commData, AntData antData) {
-        ant = new AntAction(AntAction.AntActionType.STASIS);
+        antAction = new AntAction(AntAction.AntActionType.STASIS);
 
         this.commData = commData;
         if (this.commData == null) System.out.println("commData is null");
         if (this.commData.myNest == null) System.out.println("myNest is null");
         if (this.commData.nestData == null) System.out.println("nestData is null");
-        ant.type = AntAction.AntActionType.STASIS;
+        antAction.type = AntAction.AntActionType.STASIS;
         this.antData = antData;
     }
 
     public AntAction getAntAction() {
-        return this.ant;
+        return this.antAction;
     }
 
     public void setAntAction(AntAction ant) {
-        this.ant = ant;
+        this.antAction = ant;
     }
 
     public AntData getAntData() {
@@ -72,7 +71,7 @@ public class AI {
 
     //=============================================================================
     // This method sets the given action to EXIT_NEST if and only if the given
-    //   ant is underground.
+    //   antAction is underground.
     // Returns true if an action was set. Otherwise returns false
     //=============================================================================
     public boolean exitNest()
@@ -128,27 +127,28 @@ public class AI {
     {
         //AntAction action = new AntAction(AntAction.AntActionType.STASIS);
 
-        if (antData.ticksUntilNextAction > 0) return this.ant;
+        if (antData.ticksUntilNextAction > 0) return this.antAction;
 
-        if (exitNest()) return this.ant; //always exit nest first
+        if (exitNest()) return this.antAction; //always exit nest first
 
-        if (attackAdjacent()) return this.ant;
+        if (goHomeIfCarryingOrHurt()) return this.antAction;
 
-        if (pickUpFoodAdjacent()) return this.ant;
+        if (pickUpFoodAdjacent()) return this.antAction;
 
-        if (goHomeIfCarryingOrHurt()) return this.ant;
+        if (goExplore()) return this.antAction;
 
-        if (pickUpWater()) return this.ant;
+        if (attackAdjacent()) return this.antAction;
 
-        if (goToEnemyAnt()) return this.ant;
+        if (pickUpWater()) return this.antAction;
 
-        if (goToFood()) return this.ant;
+        if (goToEnemyAnt()) return this.antAction;
 
-        if (goToGoodAnt()) return this.ant;
+        if (goToFood()) return this.antAction;
 
-        if (goExplore()) return this.ant;
+        if (goToGoodAnt()) return this.antAction;
 
-        return this.ant;
+
+        return this.antAction;
     }
 
 }
