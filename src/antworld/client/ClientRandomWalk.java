@@ -23,6 +23,7 @@ public class ClientRandomWalk
 //  private NestNameEnum myNestName = NestNameEnum.ARMY;
   private int centerX, centerY;
 
+  private RandomWalkAI testAI;
 
   private Socket clientSocket;
 
@@ -44,8 +45,18 @@ public class ClientRandomWalk
       if (!isConnected) try { Thread.sleep(2500); } catch (InterruptedException e1) {}
     }
     CommData data = chooseNest();
+    testAI = new RandomWalkAI(data, null);
     mainGameLoop(data);
     closeAll();
+  }
+
+  public int getCenterX()
+  {
+    return this.centerX;
+  }
+  public int getCenterY()
+  {
+    return this.centerY;
   }
 
   private boolean openConnection(String host, int portNumber)
@@ -158,6 +169,8 @@ public class ClientRandomWalk
       {
 
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
+        if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
+
         chooseActionsOfAllAnts(data);
 
         CommData sendData = data.packageForSendToServer();
@@ -220,11 +233,18 @@ public class ClientRandomWalk
   private void chooseActionsOfAllAnts(CommData commData)
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
+
+    testAI.setCommData(commData);
+    testAI.setCenterX(centerX);
+    testAI.setCenterY(centerY);
     for (AntData ant : commData.myAntList)
     {
+      testAI.setAntData(ant);
+      ant.myAction =testAI.chooseAction();
       //but, we want ants to not always have the same action
-      AntAction action = chooseAction(commData, ant);
-      ant.myAction = action;
+      //AntAction action = chooseAction(commData, ant);
+      //ant.myAction = action;
+
     }
     for (FoodData f : commData.foodSet)
     {
