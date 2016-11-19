@@ -155,7 +155,7 @@ public class CommData implements Serializable
     for (AntData ant : myAntList)
     { out = out + "\n     " + ant;
     }
-    if (enemyAntSet != null) 
+    if (enemyAntSet != null)
     {  out = out + "\n     enemyAntSet:";
       for (AntData ant : enemyAntSet)
       { out = out + "\n     " + ant;
