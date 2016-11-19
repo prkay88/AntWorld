@@ -49,8 +49,11 @@ public class ClientRandomWalk
       isConnected = openConnection(host, portNumber);
       if (!isConnected) try { Thread.sleep(2500); } catch (InterruptedException e1) {}
     }
+
     CommData data = chooseNest();
     testAI = new RandomWalkAI(data, null);
+    testAI.setCenterX(centerX);
+    testAI.setCenterY(centerY);
     mainGameLoop(data);
     closeAll();
   }
@@ -244,8 +247,6 @@ public class ClientRandomWalk
     //sets the actions effectively editing the CommData before being sent to the server for each ants
 
     testAI.setCommData(commData);
-    testAI.setCenterX(centerX);
-    testAI.setCenterY(centerY);
     for (AntData ant : commData.myAntList)
     {
       testAI.setAntData(ant);
