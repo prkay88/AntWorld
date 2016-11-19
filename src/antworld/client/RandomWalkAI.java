@@ -10,14 +10,14 @@ import java.util.Random;
 public class RandomWalkAI extends AI {
 
 
-    public RandomWalkAI(CommData data, AntData antData, int centerX, int centerY)
+    public RandomWalkAI(CommData data, AntData antData)
     {
         /*this.commData = data;
         centerX = commData.nestData[commData.myNest.ordinal()].centerX;
         centerY = commData.nestData[commData.myNest.ordinal()].centerY;
         ant.type = AntAction.AntActionType.STASIS;
         this.antData = antData;*/
-        super(data, antData, centerX, centerY);
+        super(data, antData);
     }
 
 

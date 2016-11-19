@@ -50,7 +50,7 @@ public class ClientRandomWalk
       if (!isConnected) try { Thread.sleep(2500); } catch (InterruptedException e1) {}
     }
     CommData data = chooseNest();
-
+    testAI = new RandomWalkAI(data, null);
     mainGameLoop(data);
     closeAll();
   }
@@ -242,14 +242,17 @@ public class ClientRandomWalk
   private void chooseActionsOfAllAnts(CommData commData)
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
-    CommData tempData = commData;
+
+    testAI.setCommData(commData);
+    testAI.setCenterX(centerX);
+    testAI.setCenterY(centerY);
     for (AntData ant : commData.myAntList)
     {
-      testAI = new RandomWalkAI(tempData, ant, centerX, centerY);
+      testAI.setAntData(ant);
       ant.myAction =testAI.chooseAction();
       //but, we want ants to not always have the same action
-      AntAction action = chooseAction(commData, ant);
-      ant.myAction = action;
+      //AntAction action = chooseAction(commData, ant);
+      //ant.myAction = action;
 
     }
   }

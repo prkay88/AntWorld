@@ -24,15 +24,13 @@ public class AI {
 
     }
 
-    public AI(CommData commData, AntData antData, int centerX, int centerY) {
+    public AI(CommData commData, AntData antData) {
         ant = new AntAction(AntAction.AntActionType.STASIS);
 
         this.commData = commData;
         if (this.commData == null) System.out.println("commData is null");
         if (this.commData.myNest == null) System.out.println("myNest is null");
         if (this.commData.nestData == null) System.out.println("nestData is null");
-        this.centerY = centerY;
-        this.centerX = centerX;
         ant.type = AntAction.AntActionType.STASIS;
         this.antData = antData;
     }
