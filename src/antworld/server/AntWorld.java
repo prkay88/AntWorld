@@ -544,8 +544,12 @@ public class AntWorld implements ActionListener
 
       if(DEBUG)
       {
-        spawnX = 209 + 25; //xCenter of ARMY ant nest spawn + 30 units to the right.
-        spawnY = 489;    //yCenter of ARMY ant nest.
+        //EAST
+//        spawnX = 209 + 25; //xCenter of ARMY ant nest spawn + 30 units to the right.
+//        spawnY = 489;    //yCenter of ARMY ant nest.
+        //NORTH
+        spawnX = 209;
+        spawnY = 489-25;
       }
 
       if (world[spawnX][spawnY].getLandType() == LandType.GRASS)

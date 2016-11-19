@@ -25,7 +25,8 @@ public class RandomWalkAI extends AI {
         //make them move North East all the time
 //    Direction dir = Direction.getRandomDir();
         System.out.println("Inside RWAI goExplore");
-        Direction dir = Direction.EAST;
+//        Direction dir = Direction.EAST; //go east
+        Direction dir = Direction.NORTH; //go north
         antAction.type = AntAction.AntActionType.MOVE;
         antAction.direction = dir;
         return true;
@@ -37,29 +38,14 @@ public class RandomWalkAI extends AI {
         System.out.println("Inside RWAI exitNest");
         if (antData.underground)
         {
-            //can only set action.x and action.y in coordinates within the nest
-//      int dir = random.nextInt(2); //random between 0 and 1
-//      if(dir == 0)
-//      {
-//        action.x = centerX+9;
-//        action.y = centerY+9;
-//      }
-//      else if(dir == 1)
-//      {
-//        action.x = centerX-9;
-//        action.y = centerY-9;
-//      }
             antAction.type = AntAction.AntActionType.EXIT_NEST;
-            //action.x = centerX+9;
-            //action.y = centerY+9;
-
-//      antAction.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-//      antAction.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-            antAction.x = centerX+ 9;
-            antAction.y = centerY;
+            //when food is EAST of the nest
+//            antAction.x = centerX + 9;
+//            antAction.y = centerY;
+            antAction.x = centerX;
+            antAction.y = centerY - 9;
             return true;
         }
-//    System.out.println("Exiting:");
         return false;
     }
 
@@ -78,9 +64,17 @@ public class RandomWalkAI extends AI {
         int foodX = food.gridX;
         int foodY = food.gridY;
 
-        if(foodX == antX+1)
+        if(foodX == antX+1 && foodY == antY)
         {
             antAction.direction = Direction.EAST;
+            antAction.quantity = 2;
+            antAction.type = AntAction.AntActionType.PICKUP;
+            return true;
+        }
+        else if(foodX == antX && foodY == antY-1)
+        {
+            System.out.println("In pickUpFood(): pick up food north.");
+            antAction.direction = Direction.NORTH;
             antAction.quantity = 2;
             antAction.type = AntAction.AntActionType.PICKUP;
             return true;
@@ -93,13 +87,26 @@ public class RandomWalkAI extends AI {
     {
         if(antData.carryUnits > 0)
         {
-            antAction.direction = Direction.WEST;
+            int xDiff = antData.gridX - centerX;
+            int yDiff = antData.gridY - centerY;
+            System.out.println("in goHomeIfCarryingOrHurt: yDiff="+yDiff);
+
+            if(xDiff >= 1 && yDiff == 0)
+            {
+                antAction.direction = Direction.WEST;
+            }
+            else if(xDiff == 0 && yDiff <= -1)
+            {
+                System.out.println("in goHomeIfCarryingOrHurt: go south");
+                antAction.direction = Direction.SOUTH;
+            }
             antAction.type = AntAction.AntActionType.MOVE;
             int diffFromCenterX = Math.abs(centerX-antData.gridX);
             int diffFromCenterY = Math.abs(centerY-antData.gridY);
             if(diffFromCenterX <= Constants.NEST_RADIUS && diffFromCenterY <= Constants.NEST_RADIUS)
             {
-                antAction.direction = Direction.WEST;
+//                antAction.direction = Direction.WEST; //drop when food is in EAST
+                antAction.direction = Direction.SOUTH; //drop when food is in NORTH
                 antAction.type = AntAction.AntActionType.DROP;
                 antAction.quantity = antData.carryUnits; //just drop all
             }
