@@ -18,6 +18,22 @@ public class RandomWalkAI extends AI {
         super(data, antData);
     }
 
+    private AntAction chooseDirection(int startX, int startY, int goalX, int goalY)
+    {
+        AntAction antAction = new AntAction(AntAction.AntActionType.MOVE);
+        if(startX > goalX && startY > goalY) antAction.direction = Direction.NORTHWEST;
+        if(startX < goalX && startY > goalY) antAction.direction = Direction.NORTHEAST;
+        if(startX > goalX && startY < goalY) antAction.direction = Direction.SOUTHWEST;
+        if(startX < goalX && startY < goalY) antAction.direction = Direction.SOUTHEAST;
+        if(startX == goalX && startY > goalY) antAction.direction = Direction.NORTH;
+        if(startX == goalX && startY < goalY) antAction.direction = Direction.SOUTH;
+        if(startX > goalX && startY == goalY) antAction.direction = Direction.EAST;
+        if(startX < goalX && startY == goalY) antAction.direction = Direction.WEST;
+
+        return antAction;
+
+    }
+
 
     @Override
     public boolean goExplore()
@@ -116,5 +132,32 @@ public class RandomWalkAI extends AI {
 
     }
 
+    @Override
+    public boolean goToFood()
+    {
+        int gotToX=0;
+        int goToY=0;
+        int closestFood = 1000000;
+        if (!commData.foodSet.isEmpty() || commData.foodSet != null)
+        {
+            for(FoodData food : commData.foodSet)
+            {
+                int distance = Util.manhattanDistance(food.gridX, food.gridY, antData.gridX, antData.gridY);
+                if(distance < closestFood)
+                {
+                    gotToX = food.gridX;
+                    goToY = food.gridY;
+                    closestFood = distance;
+                }
+
+            }
+            if(gotToX != 0 && goToY != 0)
+            {
+                antAction = chooseDirection(antData.gridX, antData.gridY, gotToX, goToY);
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
