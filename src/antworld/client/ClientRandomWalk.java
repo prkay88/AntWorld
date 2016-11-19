@@ -7,13 +7,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Random;
 
-import antworld.common.AntAction;
-import antworld.common.AntData;
-import antworld.common.CommData;
-import antworld.common.Constants;
-import antworld.common.Direction;
-import antworld.common.NestNameEnum;
-import antworld.common.TeamNameEnum;
+import antworld.common.*;
 import antworld.common.AntAction.AntActionType;
 import jdk.nashorn.internal.runtime.regexp.joni.ast.ConsAltNode;
 
@@ -32,6 +26,7 @@ public class ClientRandomWalk
 
   private Socket clientSocket;
 
+  private int antsMovingEast = 0;
 
   //A random number generator is created in Constants. Use it.
   //Do not create a new generator every time you want a random number nor
@@ -199,14 +194,12 @@ public class ClientRandomWalk
         e.printStackTrace();
         System.exit(0);
       }
-
     }
   }
 
 
   private boolean sendCommData(CommData data)
   {
-
     CommData sendData = data.packageForSendToServer();
     try
     {
@@ -221,9 +214,7 @@ public class ClientRandomWalk
       e.printStackTrace();
       System.exit(0);
     }
-
     return true;
-
   }
 
   private void chooseActionsOfAllAnts(CommData commData)
@@ -235,10 +226,11 @@ public class ClientRandomWalk
       AntAction action = chooseAction(commData, ant);
       ant.myAction = action;
     }
+    for (FoodData f : commData.foodSet)
+    {
+      System.out.println("Food: (" + f.gridX + ", " + f.gridY+"), Count: "+ f.count);
+    }
   }
-
-
-
 
   //=============================================================================
   // This method sets the given action to EXIT_NEST if and only if the given
@@ -249,26 +241,28 @@ public class ClientRandomWalk
   {
     if (ant.underground)
     {
-      //can only set action.x and action.y in coordinates within the nest
-//      int dir = random.nextInt(2); //random between 0 and 1
-//      if(dir == 0)
-//      {
-//        action.x = centerX+9;
-//        action.y = centerY+9;
-//      }
-//      else if(dir == 1)
-//      {
-//        action.x = centerX-9;
-//        action.y = centerY-9;
-//      }
       action.type = AntActionType.EXIT_NEST;
 //      action.x = centerX+9;
 //      action.y = centerY+9;
-      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
+//      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
+//      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
+      //we are debugging if initial ant spawn count is 2
+
+      //TODO: might want a better name
+      if(antsMovingEast == 0)
+      {
+        action.x = centerX + 9;
+        action.y = centerY + 2;
+        antsMovingEast++;
+      }
+      else if(antsMovingEast == 1)
+      {
+        action.x = centerX + 8;
+        action.y = centerY + 1;
+        antsMovingEast = 0;
+      }
       return true;
     }
-//    System.out.println("Exiting:");
     return false;
   }
 
@@ -278,13 +272,46 @@ public class ClientRandomWalk
     return false;
   }
 
-  private boolean pickUpFoodAdjacent(AntData ant, AntAction action)
+  private boolean pickUpFoodAdjacent(AntData ant, AntAction action, CommData data)
   {
+    if(data.foodSet.size() == 0) return false;
+    int antX = ant.gridX;
+    int antY = ant.gridY;
+
+    FoodData food = null;
+    for(FoodData f : data.foodSet)
+    {
+      food = f;
+    }
+    int foodX = food.gridX;
+    int foodY = food.gridY;
+
+    if(foodX == antX+1)
+    {
+      action.direction = Direction.EAST;
+      action.quantity = 2;
+      action.type = AntActionType.PICKUP;
+      return true;
+    }
     return false;
   }
 
   private boolean goHomeIfCarryingOrHurt(AntData ant, AntAction action)
   {
+    if(ant.carryUnits > 0)
+    {
+      action.direction = Direction.WEST;
+      action.type = AntActionType.MOVE;
+      int diffFromCenterX = Math.abs(centerX-ant.gridX);
+      int diffFromCenterY = Math.abs(centerY-ant.gridY);
+      if(diffFromCenterX <= Constants.NEST_RADIUS && diffFromCenterY <= Constants.NEST_RADIUS)
+      {
+        action.direction = Direction.WEST;
+        action.type = AntActionType.DROP;
+        action.quantity = ant.carryUnits; //just drop all
+      }
+      return true;
+    }
     return false;
   }
 
@@ -298,8 +325,49 @@ public class ClientRandomWalk
     return false;
   }
 
-  private boolean goToFood(AntData ant, AntAction action)
+  private boolean goToFood(AntData ant, AntAction action, CommData data)
   {
+    if(data.foodSet.size() > 0)
+    {
+      FoodData food = null;
+      for(FoodData f : data.foodSet)
+      {
+        food = f;
+      }
+      if(food.gridX > ant.gridX && food.gridY > ant.gridY)
+      {
+        action.direction = Direction.NORTHEAST;
+      }
+      else if(food.gridX > ant.gridX && food.gridY < ant.gridY)
+      {
+        action.direction = Direction.SOUTHEAST;
+      }
+      else if(food.gridX < ant.gridX && food.gridY > ant.gridY)
+      {
+        action.direction = Direction.NORTHWEST;
+      }
+      else if(food.gridX < ant.gridX && food.gridY < ant.gridY)
+      {
+        action.direction = Direction.SOUTHWEST;
+      }
+      else if(food.gridX > ant.gridX)
+      {
+        action.direction = Direction.EAST;
+      }
+      else if(food.gridX < ant.gridX)
+      {
+        action.direction = Direction.WEST;
+      }
+      else if(food.gridY > ant.gridY)
+      {
+        action.direction = Direction.NORTH;
+      }
+      else if(food.gridY < ant.gridY)
+      {
+        action.direction = Direction.SOUTH;
+      }
+      return true;
+    }
     return false;
   }
 
@@ -308,12 +376,25 @@ public class ClientRandomWalk
     return false;
   }
 
-  private boolean goExplore(AntData ant, AntAction action)
+  private boolean goExplore(AntData ant, AntAction action, CommData data)
   {
+    if(data.foodSet.size() > 0)
+    {
+      return false;
+    }
     //make them move North East all the time
 //    Direction dir = Direction.getRandomDir();
-    Direction dir = Direction.EAST;
+    Direction dir = Direction.NORTHEAST;
     action.type = AntActionType.MOVE;
+//    if(antsMovingEast == 0)
+//    {
+//      antsMovingEast++;
+//    }
+//    else if(antsMovingEast == 1)
+//    {
+//      dir = Direction.NORTH;
+//      antsMovingEast = 0; //so the other one can go east
+//    }
     action.direction = dir;
     return true;
   }
@@ -327,21 +408,23 @@ public class ClientRandomWalk
 
     if (exitNest(ant, action)) return action; //always exit nest first
 
-    if (attackAdjacent(ant, action)) return action;
+    if (goExplore(ant, action, data)) return action;
 
-    if (pickUpFoodAdjacent(ant, action)) return action;
+    if (goToFood(ant, action, data)) return action;
 
     if (goHomeIfCarryingOrHurt(ant, action)) return action;
+
+    if (pickUpFoodAdjacent(ant, action, data)) return action;
+
+    if (attackAdjacent(ant, action)) return action;
 
     if (pickUpWater(ant, action)) return action;
 
     if (goToEnemyAnt(ant, action)) return action;
 
-    if (goToFood(ant, action)) return action;
-
     if (goToGoodAnt(ant, action)) return action;
 
-    if (goExplore(ant, action)) return action;
+
 
     return action;
   }
