@@ -548,7 +548,7 @@ public class AntWorld implements ActionListener
 //        spawnX = 209 + 25; //xCenter of ARMY ant nest spawn + 30 units to the right.
 //        spawnY = 489;    //yCenter of ARMY ant nest.
         //NORTH
-        spawnX = 209;
+        spawnX = 209+5;
         spawnY = 489-25;
       }
 

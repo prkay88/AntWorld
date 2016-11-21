@@ -168,14 +168,13 @@ public class ClientRandomWalk
   {
     while (true)
     {
+      testAI.setCommData(data);
       try
       {
-
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
 
         chooseActionsOfAllAnts(data);
-
         CommData sendData = data.packageForSendToServer();
 
         System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
@@ -189,8 +188,6 @@ public class ClientRandomWalk
         CommData receivedData = (CommData) inputStream.readObject();
         if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + receivedData);
         data = receivedData;
-
-
 
         if ((myNestName == null) || (data.myTeam != myTeam))
         {
@@ -236,218 +233,18 @@ public class ClientRandomWalk
   private void chooseActionsOfAllAnts(CommData commData)
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
-
-    testAI.setCommData(commData);
     for (AntData ant : commData.myAntList)
     {
+//      testAI.setCommData(commData);
+      //all ants move at the same direction, and does the same thing. This shouldn't happen.
       testAI.setAntData(ant);
-      ant.myAction =testAI.chooseAction();
-      //but, we want ants to not always have the same action
-      //AntAction action = chooseAction(commData, antAction);
-      //antAction.myAction = action;
-
+      ant.myAction = testAI.chooseAction(); //something weird here
+//      System.out.println("Ant="+ant.toString()+", myAction="+ant.myAction);
     }
     for (FoodData f : commData.foodSet)
     {
       System.out.println("Food: (" + f.gridX + ", " + f.gridY+"), Count: "+ f.count);
     }
-  }
-
-  //=============================================================================
-  // This method sets the given action to EXIT_NEST if and only if the given
-  //   antAction is underground.
-  // Returns true if an action was set. Otherwise returns false
-  //=============================================================================
-  private boolean exitNest(AntData ant, AntAction action)
-  {
-    if (ant.underground)
-    {
-      action.type = AntActionType.EXIT_NEST;
-//      action.x = centerX+9;
-//      action.y = centerY+9;
-//      action.x = centerX - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-//      action.y = centerY - (Constants.NEST_RADIUS-1) + random.nextInt(2 * (Constants.NEST_RADIUS-1));
-      //we are debugging if initial antAction spawn count is 2
-
-      //TODO: might want a better name
-//      if(antsMovingEast == 0)
-//      {
-        action.x = centerX + 9;
-        action.y = centerY;
-//        antsMovingEast++;
-//      }
-//      else if(antsMovingEast == 1)
-//      {
-//        action.x = centerX + 8;
-//        action.y = centerY + 1;
-//        antsMovingEast = 0;
-//      }
-      return true;
-    }
-    return false;
-  }
-
-
-  private boolean attackAdjacent(AntData ant, AntAction action)
-  {
-    return false;
-  }
-
-  private boolean pickUpFoodAdjacent(AntData ant, AntAction action, CommData data)
-  {
-    if(data.foodSet.size() == 0) return false;
-    int antX = ant.gridX;
-    int antY = ant.gridY;
-
-    FoodData food = null;
-    for(FoodData f : data.foodSet)
-    {
-      food = f;
-    }
-    int foodX = food.gridX;
-    int foodY = food.gridY;
-
-    if(foodX == antX+1)
-    {
-      action.direction = Direction.EAST;
-      action.quantity = 2;
-      action.type = AntActionType.PICKUP;
-      return true;
-    }
-    return false;
-  }
-
-  private boolean goHomeIfCarryingOrHurt(AntData ant, AntAction action)
-  {
-    if(ant.carryUnits > 0)
-    {
-      action.direction = Direction.WEST;
-      action.type = AntActionType.MOVE;
-      int diffFromCenterX = Math.abs(centerX-ant.gridX);
-      int diffFromCenterY = Math.abs(centerY-ant.gridY);
-      if(diffFromCenterX <= Constants.NEST_RADIUS && diffFromCenterY <= Constants.NEST_RADIUS)
-      {
-        action.direction = Direction.WEST;
-        action.type = AntActionType.DROP;
-        action.quantity = ant.carryUnits; //just drop all
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private boolean pickUpWater(AntData ant, AntAction action)
-  {
-    return false;
-  }
-
-  private boolean goToEnemyAnt(AntData ant, AntAction action)
-  {
-    return false;
-  }
-
-  private boolean goToFood(AntData ant, AntAction action, CommData data)
-  {
-    if(data.foodSet.size() > 0)
-    {
-      FoodData food = null;
-      for(FoodData f : data.foodSet)
-      {
-        food = f;
-      }
-      if(food.gridX > ant.gridX && food.gridY > ant.gridY)
-      {
-        action.direction = Direction.NORTHEAST;
-      }
-      else if(food.gridX > ant.gridX && food.gridY < ant.gridY)
-      {
-        action.direction = Direction.SOUTHEAST;
-      }
-      else if(food.gridX < ant.gridX && food.gridY > ant.gridY)
-      {
-        action.direction = Direction.NORTHWEST;
-      }
-      else if(food.gridX < ant.gridX && food.gridY < ant.gridY)
-      {
-        action.direction = Direction.SOUTHWEST;
-      }
-      else if(food.gridX > ant.gridX)
-      {
-        action.direction = Direction.EAST;
-      }
-      else if(food.gridX < ant.gridX)
-      {
-        action.direction = Direction.WEST;
-      }
-      else if(food.gridY > ant.gridY)
-      {
-        action.direction = Direction.NORTH;
-      }
-      else if(food.gridY < ant.gridY)
-      {
-        action.direction = Direction.SOUTH;
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private boolean goToGoodAnt(AntData ant, AntAction action)
-  {
-    return false;
-  }
-
-  private boolean goExplore(AntData ant, AntAction action, CommData data)
-  {
-//    if(data.foodSet.size() > 0)
-//    {
-//      return false;
-//    }
-    //make them move North East all the time
-//    Direction dir = Direction.getRandomDir();
-    Direction dir = Direction.EAST;
-    action.type = AntActionType.MOVE;
-//    if(antsMovingEast == 0)
-//    {
-//      antsMovingEast++;
-//    }
-//    else if(antsMovingEast == 1)
-//    {
-//      dir = Direction.NORTH;
-//      antsMovingEast = 0; //so the other one can go east
-//    }
-    action.direction = dir;
-    return true;
-  }
-
-
-  private AntAction chooseAction(CommData data, AntData ant)
-  {
-    AntAction action = new AntAction(AntActionType.STASIS);
-
-    if (ant.ticksUntilNextAction > 0) return action;
-
-    if (exitNest(ant, action)) return action; //always exit nest first
-
-    if (goExplore(ant, action, data)) return action;
-
-//    if (goToFood(antAction, action, data)) return action;
-
-    if (goHomeIfCarryingOrHurt(ant, action)) return action;
-
-    if (pickUpFoodAdjacent(ant, action, data)) return action;
-
-    if (attackAdjacent(ant, action)) return action;
-
-    if (pickUpWater(ant, action)) return action;
-
-    if (goToEnemyAnt(ant, action)) return action;
-
-    if (goToGoodAnt(ant, action)) return action;
-
-
-
-    return action;
   }
 
   public static void main(String[] args)
