@@ -268,7 +268,7 @@ public class RandomWalkAI extends AI
   @Override
   public boolean goToWater()
   {
-    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 200)
+    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 100)
     {
       antAction.type = AntAction.AntActionType.MOVE;
       antAction = chooseDirection(antData.gridX, antData.gridY, 65, 140);

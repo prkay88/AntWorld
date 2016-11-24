@@ -9,8 +9,6 @@ import java.net.UnknownHostException;
 import java.util.Random;
 
 import antworld.common.*;
-import antworld.common.AntAction.AntActionType;
-import jdk.nashorn.internal.runtime.regexp.joni.ast.ConsAltNode;
 
 public class ClientRandomWalk
 {
@@ -24,7 +22,8 @@ public class ClientRandomWalk
 //  private NestNameEnum myNestName = NestNameEnum.ARMY;
   private int centerX, centerY;
   
-  LandType[][] world; //contains all the land types of the map being used
+  //cell class in client, not sure if we can use the one in server package
+  ClientCell[][] world; //contains all the land types of the map being used
   
   private RandomWalkAI testAI;
 
@@ -169,6 +168,20 @@ public class ClientRandomWalk
 
   public void mainGameLoop(CommData data)
   {
+    BufferedImage map = Util.loadImage("TestReadMap.png", null);
+    System.out.println("Is map null? map="+map);
+    readMap(map);
+    //seems to work:
+    for(int y=0; y<map.getHeight(); y++)
+    {
+      for(int x=0; x<map.getWidth(); x++)
+      {
+        System.out.print(world[x][y].landType +" ");
+      }
+      System.out.println();
+    }
+    System.exit(0);
+    
     while (true)
     {
       testAI.setCommData(data);
@@ -247,19 +260,43 @@ public class ClientRandomWalk
     }
   }
   
-//  public void readMap(BufferedImage map)
-//  {
-//    int mapWidth = map.getWidth();
-//    int mapHeight = map.getHeight();
-//    for(int i=0; i<mapHeight; i++)
-//    {
-//      for(int j=0; j<mapWidth; j++)
-//      {
-//        rgb
-//      }
-//    }
-//  }
-//
+  public void readMap(BufferedImage map)
+  {
+    int mapWidth = map.getWidth();
+    int mapHeight = map.getHeight();
+    world = new ClientCell[mapHeight][mapWidth];
+    for(int y=0; y<mapHeight; y++)
+    {
+      for(int x=0; x<mapWidth; x++)
+      {
+        int rgb = (map.getRGB(x, y) & 0x00FFFFFF);
+        LandType landType = LandType.GRASS;
+        int height = 0;
+        if (rgb == 0xF0E68C)
+        {
+          System.out.println("Nest");
+          landType = LandType.NEST;
+//          world[x][y] = new ClientCell(LandType.NEST, height);
+        }
+        else if (rgb == 0x1E90FF)
+        {
+          System.out.println("Water");
+          landType = LandType.WATER;
+//          world[x][y] = new ClientCell(LandType.WATER, height);
+        }
+        else
+        {
+          int g = (rgb & 0x0000FF00) >> 8;
+          height = g - 55;
+        }
+        // System.out.println("("+x+","+y+") rgb="+rgb +
+        // ", landType="+landType
+        // +" height="+height);
+        world[x][y] = new ClientCell(landType, height);
+      }
+    }
+  }
+
 
   public static void main(String[] args)
   {
