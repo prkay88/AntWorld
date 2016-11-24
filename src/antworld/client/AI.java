@@ -127,10 +127,14 @@ public class AI
   
   public boolean goExplore()
   {
-    
     return false;
   }
   
+  //Arthur's method. Not needed?
+  public boolean goToWater()
+  {
+    return false;
+  }
   
   public AntAction chooseAction()
   {
@@ -149,7 +153,6 @@ public class AI
     
     if (goExplore()) return this.antAction;
     
-    
     if (attackAdjacent()) return this.antAction;
     
     if (pickUpWater()) return this.antAction;
@@ -157,7 +160,6 @@ public class AI
     if (goToEnemyAnt()) return this.antAction;
     
     if (goToGoodAnt()) return this.antAction;
-    
     
     return this.antAction;
   }

@@ -1,5 +1,6 @@
 package antworld.client;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,7 +23,9 @@ public class ClientRandomWalk
   private NestNameEnum myNestName = null;
 //  private NestNameEnum myNestName = NestNameEnum.ARMY;
   private int centerX, centerY;
-
+  
+  LandType[][] world; //contains all the land types of the map being used
+  
   private RandomWalkAI testAI;
 
   private Socket clientSocket;
@@ -235,17 +238,28 @@ public class ClientRandomWalk
     //sets the actions effectively editing the CommData before being sent to the server for each ants
     for (AntData ant : commData.myAntList)
     {
-//      testAI.setCommData(commData);
-      //all ants move at the same direction, and does the same thing. This shouldn't happen.
       testAI.setAntData(ant);
       ant.myAction = testAI.chooseAction(); //something weird here
-//      System.out.println("Ant="+ant.toString()+", myAction="+ant.myAction);
     }
     for (FoodData f : commData.foodSet)
     {
       System.out.println("Food: (" + f.gridX + ", " + f.gridY+"), Count: "+ f.count);
     }
   }
+  
+//  public void readMap(BufferedImage map)
+//  {
+//    int mapWidth = map.getWidth();
+//    int mapHeight = map.getHeight();
+//    for(int i=0; i<mapHeight; i++)
+//    {
+//      for(int j=0; j<mapWidth; j++)
+//      {
+//        rgb
+//      }
+//    }
+//  }
+//
 
   public static void main(String[] args)
   {

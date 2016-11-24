@@ -52,7 +52,8 @@ public class AntWorld implements ActionListener
   private ArrayList<FoodSpawnSite> foodSpawnList;
   private static int gameTick = 0;
 
-  private boolean DEBUG = true;
+  private boolean DEBUG = true; //for debugging pruposes
+  private int mapNum = 3; //for debugging pruposes
 
   public AntWorld(boolean showGUI, String restorePoint)
   {
@@ -62,10 +63,16 @@ public class AntWorld implements ActionListener
     drawPanel = new Renderer(title, FRAME_WIDTH, FRAME_HEIGHT);
     JFrame window = drawPanel.window;
 
-    // BufferedImage map = loadImage("small.png", window);
+    BufferedImage map = null;
     //TODO: AntWorld.png is changed into SmallMap1.png
-//    BufferedImage map = Util.loadImage("AntWorld.png", window);
-    BufferedImage map = Util.loadImage("SmallMap2.png", window);
+    if (!DEBUG)
+    {
+      map = Util.loadImage("AntWorld.png", window);
+    }
+    else if (DEBUG)
+    {
+      map = Util.loadImage("SmallMap3.png", window);
+    }
     worldWidth = map.getWidth();
     worldHeight = map.getHeight();
     readAntWorld(map);
@@ -528,8 +535,11 @@ public class AntWorld implements ActionListener
     foodSpawnList = new ArrayList<FoodSpawnSite>();
 
     //TODO: uncomment for proper behavior:
-//    int totalSitesToSpawn = nestList.size()/2;
-    int totalSitesToSpawn = 1;
+    int totalSitesToSpawn = nestList.size()/2;
+    if(DEBUG)
+    {
+      totalSitesToSpawn = 1;
+    }
     while (totalSitesToSpawn > 0)
     {
       int nestIdx1 = random.nextInt(nestList.size());
@@ -544,12 +554,28 @@ public class AntWorld implements ActionListener
 
       if(DEBUG)
       {
-        //EAST
+        if(mapNum == 3)
+        {
+          spawnX = 65 + 25;
+          spawnY = 163;
+        }
+        //Put food EAST
 //        spawnX = 209 + 25; //xCenter of ARMY ant nest spawn + 30 units to the right.
 //        spawnY = 489;    //yCenter of ARMY ant nest.
+        //Put food WEST
+//        spawnX = 209 - 25;
+//        spawnY = 489;
         //NORTH
-        spawnX = 209+5;
-        spawnY = 489-25;
+//        spawnX = 209 + 25;
+//        spawnY = 489 - 25;
+//        if(totalSitesToSpawn == 1)
+//        {
+//          spawnX = 209 + 25;
+//          spawnY = 489 + 25;
+//        }
+        //SOUTH
+//        spawnX = 209;
+//        spawnY = 489 + 25;
       }
 
       if (world[spawnX][spawnY].getLandType() == LandType.GRASS)
