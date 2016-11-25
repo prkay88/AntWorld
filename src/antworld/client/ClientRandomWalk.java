@@ -23,7 +23,7 @@ public class ClientRandomWalk
   private int centerX, centerY;
   
   //cell class in client, not sure if we can use the one in server package
-  ClientCell[][] world; //contains all the land types of the map being used
+  static ClientCell[][] world; //contains all the land types of the map being used
   
   private RandomWalkAI testAI;
 
@@ -168,19 +168,19 @@ public class ClientRandomWalk
 
   public void mainGameLoop(CommData data)
   {
-    BufferedImage map = Util.loadImage("TestReadMap.png", null);
+    BufferedImage map = Util.loadImage("SmallMap3.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
     //seems to work:
-    for(int y=0; y<map.getHeight(); y++)
-    {
-      for(int x=0; x<map.getWidth(); x++)
-      {
-        System.out.print(world[x][y].landType +" ");
-      }
-      System.out.println();
-    }
-    System.exit(0);
+//    for(int y=0; y<map.getHeight(); y++)
+//    {
+//      for(int x=0; x<map.getWidth(); x++)
+//      {
+//        System.out.print(world[x][y].landType +" ");
+//      }
+//      System.out.println();
+//    }
+//    System.exit(0);
     
     while (true)
     {
@@ -264,7 +264,7 @@ public class ClientRandomWalk
   {
     int mapWidth = map.getWidth();
     int mapHeight = map.getHeight();
-    world = new ClientCell[mapHeight][mapWidth];
+    world = new ClientCell[mapWidth][mapHeight];
     for(int y=0; y<mapHeight; y++)
     {
       for(int x=0; x<mapWidth; x++)
@@ -274,15 +274,11 @@ public class ClientRandomWalk
         int height = 0;
         if (rgb == 0xF0E68C)
         {
-          System.out.println("Nest");
           landType = LandType.NEST;
-//          world[x][y] = new ClientCell(LandType.NEST, height);
         }
         else if (rgb == 0x1E90FF)
         {
-          System.out.println("Water");
           landType = LandType.WATER;
-//          world[x][y] = new ClientCell(LandType.WATER, height);
         }
         else
         {
@@ -296,8 +292,7 @@ public class ClientRandomWalk
       }
     }
   }
-
-
+  
   public static void main(String[] args)
   {
     String serverHost = "localhost";

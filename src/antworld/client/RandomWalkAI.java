@@ -9,16 +9,17 @@ public class RandomWalkAI extends AI
 {
   public RandomWalkAI(CommData data, AntData antData)
   {
-        /*this.commData = data;
-        centerX = commData.nestData[commData.myNest.ordinal()].centerX;
-        centerY = commData.nestData[commData.myNest.ordinal()].centerY;
-        antAction.type = AntAction.AntActionType.STASIS;
-        this.antData = antData;*/
     super(data, antData);
+//    this.commData = data;
+    centerX = commData.nestData[commData.myNest.ordinal()].centerX;
+    centerY = commData.nestData[commData.myNest.ordinal()].centerY;
+//    antAction.type = AntAction.AntActionType.STASIS;
+//    this.antData = antData;
   }
   
   private AntAction chooseDirection(int startX, int startY, int goalX, int goalY)
   {
+    //Problem: Need to not tell the ants to move to a cell with food in it!
 //        AntAction antAction = new AntAction(AntAction.AntActionType.MOVE);
     //ask commData if there is an ant at the position i'm looking to go to.
     System.out.println("In RWAI choosDirection()");
@@ -57,61 +58,69 @@ public class RandomWalkAI extends AI
     else
     {
       System.out.println("FINDING ALTERNATIVE PATH.");
-      int xClosest = startX;
-      int yClosest = startY;
-      //find an alternative path when an ant is occupying a coordinate already
-      for (int i = -1; i <= 1; i++)
-      {
-        for (int j = -1; j <= 1; j++)
-        {
-          if (!positionTaken(startX + i, startY + j))
-          {
-            int distanceToFood = Util.manhattanDistance(startX + i, startY + j, goalX, goalY);
-            int currentClosestDistance = Util.manhattanDistance(xClosest, yClosest, goalX, goalY);
-            
-            //only bother if it's closer, by observation, startX and startY will never be closest
-            if (distanceToFood < currentClosestDistance || (xClosest == startX && yClosest == startY))
-            {
-              //this is the new closest coordinates
-              xClosest = startX + i;
-              yClosest = startY + j;
-              //no case for 0,0
-              if (i == -1 && j == -1)
-              {
-                antAction.direction = Direction.NORTHWEST;
-              }
-              else if (i == -1 && j == 0)
-              {
-                antAction.direction = Direction.WEST;
-              }
-              else if (i == -1 && j == 1)
-              {
-                antAction.direction = Direction.SOUTHWEST;
-              }
-              else if (i == 0 && j == -1)
-              {
-                antAction.direction = Direction.NORTH;
-              }
-              else if (i == 0 && j == 1)
-              {
-                antAction.direction = Direction.SOUTH;
-              }
-              else if (i == 1 && j == -1)
-              {
-                antAction.direction = Direction.NORTHEAST;
-              }
-              else if (i == 1 && j == 0)
-              {
-                antAction.direction = Direction.EAST;
-              }
-              else if (i == 1 && j == 1)
-              {
-                antAction.direction = Direction.SOUTHEAST;
-              }
-            }
-          }
-        }
-      }
+      //problem is breaking ties with two paths that have the same manhattan distance
+      antAction.direction = Direction.getRandomDir();
+      
+//      int xClosest = centerX;
+//      int yClosest = centerY;
+////      int xClosest = commData.nestData[commData.myNest.ordinal()].centerX;
+////      int yClosest = commData.nestData[commData.myNest.ordinal()].centerY;
+//      //find an alternative path when an ant is occupying a coordinate already
+//      for (int i = -1; i <= 1; i++)
+//      {
+//        for (int j = -1; j <= 1; j++)
+//        {
+//          if (!positionTaken(startX + i, startY + j))
+//          {
+//            int distanceToFood = Util.manhattanDistance(startX + i, startY + j, goalX, goalY);
+//            int currentClosestDistance = Util.manhattanDistance(xClosest, yClosest, goalX, goalY);
+//
+//            //only bother if it's closer, by observation, startX and startY will never be closest
+//            if (distanceToFood < currentClosestDistance || (xClosest == startX && yClosest == startY))
+//            {
+//              //this is the new closest coordinates
+//              xClosest = startX + i;
+//              yClosest = startY + j;
+//              //no case for 0,0
+//              if (i == -1 && j == -1)
+//              {
+//                antAction.direction = Direction.NORTHWEST;
+//              }
+//              else if (i == -1 && j == 0)
+//              {
+//                antAction.direction = Direction.WEST;
+//                System.out.println("Chose WEST, distance="+distanceToFood);
+//              }
+//              else if (i == -1 && j == 1)
+//              {
+//                antAction.direction = Direction.SOUTHWEST;
+//                System.out.println("Chose SOUTHWEST, distance="+distanceToFood);
+//              }
+//              else if (i == 0 && j == -1)
+//              {
+//                antAction.direction = Direction.NORTH;
+//              }
+//              else if (i == 0 && j == 1)
+//              {
+//                antAction.direction = Direction.SOUTH;
+//              }
+//              else if (i == 1 && j == -1)
+//              {
+//                antAction.direction = Direction.NORTHEAST;
+//                System.out.println("Chose NORTHEAST, distance="+distanceToFood);
+//              }
+//              else if (i == 1 && j == 0)
+//              {
+//                antAction.direction = Direction.EAST;
+//              }
+//              else if (i == 1 && j == 1)
+//              {
+//                antAction.direction = Direction.SOUTHEAST;
+//              }
+//            }
+//          }
+//        }
+//      }
     }
     return antAction;
   }
@@ -136,10 +145,10 @@ public class RandomWalkAI extends AI
     {
       antAction.type = AntAction.AntActionType.EXIT_NEST;
       //when food is EAST of the nest
-//            antAction.x = centerX;
-//            antAction.y = centerY - 9;
-      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
-      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+            antAction.x = centerX+9;
+            antAction.y = centerY;
+//      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+//      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
       return true;
     }
     return false;
@@ -199,6 +208,7 @@ public class RandomWalkAI extends AI
       //return false when there is no adjacent food
       return false;
     }
+//    System.out.println("Picking up food.");
     return true;
   }
   
@@ -243,6 +253,7 @@ public class RandomWalkAI extends AI
       if (goToX != 0 && goToY != 0)
       {
         antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
+        System.out.println("Will have ActionType MOVE");
         return true;
       }
     }
@@ -251,13 +262,23 @@ public class RandomWalkAI extends AI
   
   //This is where everything is not working correctly
   //used to check if an ant is already in this coordinate of the map
+  // true if coords are taken
+  // false if coords is NOT taken
   private boolean positionTaken(int gridX, int gridY)
   {
     for (AntData antData : commData.myAntList)
     {
-      if (antData.gridX == gridX && antData.gridY == gridY)
+      LandType typeAtCoordinates = ClientRandomWalk.world[gridX][gridY].landType;
+      if (antData.gridX == gridX && antData.gridY == gridY || typeAtCoordinates == LandType.WATER)
       {
         System.out.println("Ant in the position: " + antData);
+        return true;
+      }
+    }
+    for (FoodData foodData : commData.foodSet)
+    {
+      if(foodData.gridX == gridX && foodData.gridY == gridY)
+      {
         return true;
       }
     }

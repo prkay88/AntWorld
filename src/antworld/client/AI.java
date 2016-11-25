@@ -3,6 +3,7 @@ package antworld.client;
 import antworld.common.AntAction;
 import antworld.common.AntData;
 import antworld.common.CommData;
+import antworld.common.LandType;
 
 import java.util.Random;
 
