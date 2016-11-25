@@ -94,7 +94,7 @@ public class RandomWalkAI extends AI {
         int foodX = food.gridX;
         int foodY = food.gridY;
 
-        if(foodX == antX+1)
+        if(foodX == antX+1 && foodY == antY)
         {
             antAction.direction = Direction.EAST;
             antAction.quantity = 2;

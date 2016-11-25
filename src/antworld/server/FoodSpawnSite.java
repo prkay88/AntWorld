@@ -25,7 +25,7 @@ public class FoodSpawnSite implements Serializable
   private int activeFoodPileCount = 0;
   private boolean needSpawn = true;
   private ArrayList<FoodData> foodPileList = new ArrayList<>();
-  private boolean DEBUG = true;
+  private boolean DEBUG = false;
   
   public FoodSpawnSite(FoodType type, int x, int y, int totalNestCount)
   { 
