@@ -237,7 +237,7 @@ public class WorldRestore
 //else if (rgb == 0xDCFFF0) {landType = LandType.GRASS; height = 200;}
 ////System.out.println("("+x+","+y+") rgb="+rgb + ", landType="+landType
 //+" height="+height);
-//world[x][y] = new Cell(landType, height, x, y);
+//world[x][y] = new ClientCell(landType, height, x, y);
 //}
 //}
 //

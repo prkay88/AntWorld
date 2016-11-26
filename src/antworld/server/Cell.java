@@ -118,7 +118,7 @@ public class Cell
   
   public String toString()
   {
-    return "Cell: " + landType + "("+x+", " + y + "), height=" +height;
+    return "ClientCell: " + landType + "("+x+", " + y + "), height=" +height;
   }
 }
 
