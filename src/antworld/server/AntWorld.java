@@ -71,7 +71,7 @@ public class AntWorld implements ActionListener
     }
     else if (DEBUG)
     {
-      map = Util.loadImage("SmallMap3.png", window);
+      map = Util.loadImage("SmallMap1.png", window);
     }
     worldWidth = map.getWidth();
     worldHeight = map.getHeight();
@@ -538,7 +538,7 @@ public class AntWorld implements ActionListener
     int totalSitesToSpawn = nestList.size()/2;
     if(DEBUG)
     {
-      totalSitesToSpawn = 1;
+      totalSitesToSpawn = 1; //no food because 0
     }
     while (totalSitesToSpawn > 0)
     {
@@ -556,10 +556,10 @@ public class AntWorld implements ActionListener
       {
         if(mapNum == 3)
         {
-          spawnX = 65 + 25;
-          spawnY = 163;
+          spawnX =  81;
+          spawnY = 48;
         }
-        //Put food EAST
+//        //Put food EAST
 //        spawnX = 209 + 25; //xCenter of ARMY ant nest spawn + 30 units to the right.
 //        spawnY = 489;    //yCenter of ARMY ant nest.
         //Put food WEST

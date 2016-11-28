@@ -7,6 +7,8 @@ import antworld.common.*;
  */
 public class RandomWalkAI extends AI
 {
+  private int aggroRadius = 10;
+  
   public RandomWalkAI(CommData data, AntData antData)
   {
     super(data, antData);
@@ -60,67 +62,6 @@ public class RandomWalkAI extends AI
       System.out.println("FINDING ALTERNATIVE PATH.");
       //problem is breaking ties with two paths that have the same manhattan distance
       antAction.direction = Direction.getRandomDir();
-      
-//      int xClosest = centerX;
-//      int yClosest = centerY;
-////      int xClosest = commData.nestData[commData.myNest.ordinal()].centerX;
-////      int yClosest = commData.nestData[commData.myNest.ordinal()].centerY;
-//      //find an alternative path when an ant is occupying a coordinate already
-//      for (int i = -1; i <= 1; i++)
-//      {
-//        for (int j = -1; j <= 1; j++)
-//        {
-//          if (!positionTaken(startX + i, startY + j))
-//          {
-//            int distanceToFood = Util.manhattanDistance(startX + i, startY + j, goalX, goalY);
-//            int currentClosestDistance = Util.manhattanDistance(xClosest, yClosest, goalX, goalY);
-//
-//            //only bother if it's closer, by observation, startX and startY will never be closest
-//            if (distanceToFood < currentClosestDistance || (xClosest == startX && yClosest == startY))
-//            {
-//              //this is the new closest coordinates
-//              xClosest = startX + i;
-//              yClosest = startY + j;
-//              //no case for 0,0
-//              if (i == -1 && j == -1)
-//              {
-//                antAction.direction = Direction.NORTHWEST;
-//              }
-//              else if (i == -1 && j == 0)
-//              {
-//                antAction.direction = Direction.WEST;
-//                System.out.println("Chose WEST, distance="+distanceToFood);
-//              }
-//              else if (i == -1 && j == 1)
-//              {
-//                antAction.direction = Direction.SOUTHWEST;
-//                System.out.println("Chose SOUTHWEST, distance="+distanceToFood);
-//              }
-//              else if (i == 0 && j == -1)
-//              {
-//                antAction.direction = Direction.NORTH;
-//              }
-//              else if (i == 0 && j == 1)
-//              {
-//                antAction.direction = Direction.SOUTH;
-//              }
-//              else if (i == 1 && j == -1)
-//              {
-//                antAction.direction = Direction.NORTHEAST;
-//                System.out.println("Chose NORTHEAST, distance="+distanceToFood);
-//              }
-//              else if (i == 1 && j == 0)
-//              {
-//                antAction.direction = Direction.EAST;
-//              }
-//              else if (i == 1 && j == 1)
-//              {
-//                antAction.direction = Direction.SOUTHEAST;
-//              }
-//            }
-//          }
-//        }
-//      }
     }
     return antAction;
   }
@@ -145,10 +86,10 @@ public class RandomWalkAI extends AI
     {
       antAction.type = AntAction.AntActionType.EXIT_NEST;
       //when food is EAST of the nest
-            antAction.x = centerX+9;
-            antAction.y = centerY;
-//      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
-//      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+//      antAction.x = centerX + Constants.NEST_RADIUS-1;
+//      antAction.y = centerY;
+      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
       return true;
     }
     return false;
@@ -227,8 +168,17 @@ public class RandomWalkAI extends AI
       }
       return true;
     }
+    //must see no ants have health less than 18
+    else if (antData.carryUnits == 0 && antData.health <= 18)
+    {
+      if (Util.manhattanDistance(antData.gridX, antData.gridY, centerX, centerY) <= Constants.NEST_RADIUS)
+      {
+        antAction = chooseDirection(antData.gridX, antData.gridY, centerX, centerY); //drop when food is in NORTH
+        antAction.type = AntAction.AntActionType.ENTER_NEST;
+      }
+      return true;
+    }
     return false;
-    
   }
   
   @Override
@@ -277,7 +227,7 @@ public class RandomWalkAI extends AI
     }
     for (FoodData foodData : commData.foodSet)
     {
-      if(foodData.gridX == gridX && foodData.gridY == gridY)
+      if (foodData.gridX == gridX && foodData.gridY == gridY)
       {
         return true;
       }
@@ -289,10 +239,38 @@ public class RandomWalkAI extends AI
   @Override
   public boolean goToWater()
   {
-    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 100)
+    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 120)
     {
+      int antX = antData.gridX;
+      int antY = antData.gridY;
+      int goToX = 0;
+      int goToY = 0;
+      int closestWater = 1000000;
       antAction.type = AntAction.AntActionType.MOVE;
-      antAction = chooseDirection(antData.gridX, antData.gridY, 65, 140);
+      //search 30x30 grid around the ant, if water is not found, choose random direction.
+      for (int i=-15; i<=15; i++)
+      {
+        if (antX+i < 0) continue; //illegal coordinates
+        for (int j=-15; j<=15; j++)
+        {
+          if (antY+j < 0) continue; //illegal coordinates
+          int distanceToWater = Util.manhattanDistance(antData.gridX, antData.gridY, i,j);
+          if (ClientRandomWalk.world[antX+i][antY+j].landType == LandType.WATER &&
+                  distanceToWater < closestWater)
+          {
+            goToX = i;
+            goToY = j;
+            closestWater = distanceToWater;
+          }
+        }
+      }
+      //if no water land type in the 30x30 area around ant, then just choose random dir
+      if (goToX == 0 && goToY == 0 && closestWater == 1000000)
+      {
+        antAction.direction = Direction.getRandomDir();
+        return true;
+      }
+      antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
       return true;
     }
     return false;
@@ -304,39 +282,101 @@ public class RandomWalkAI extends AI
     //x=65, y=140 is the coordinates of one of the water patches in SmallMap3.png
     int antX = antData.gridX;
     int antY = antData.gridY;
-    int waterX = 65;
-    int waterY = 140;
-    antAction.type = AntAction.AntActionType.PICKUP;
+    ClientCell[][] world = ClientRandomWalk.world;
+//    int waterX = 65;
+//    int waterY = 140;
     antAction.quantity = 2;
-    if (waterX == antX && waterY == antY - 1)
+    if (world[antX][antY-1].landType==LandType.WATER)
     {
+      System.out.println("antX="+antX+", antY="+antY+", world[antX][antY-1]="+world[antX][antY-1].landType);
       antAction.direction = Direction.NORTH;
     }
-    else if (waterX == antX && waterY == antY + 1)
+    else if (world[antX][antY+1].landType==LandType.WATER)
     {
       antAction.direction = Direction.SOUTH;
     }
-    else if (waterX == antX + 1 && waterY == antY - 1)
+    else if (world[antX+1][antY-1].landType==LandType.WATER)
     {
       antAction.direction = Direction.NORTHEAST;
     }
-    else if (waterX == antX - 1 && waterY == antY - 1)
+    else if (world[antX-1][antY-1].landType==LandType.WATER)
     {
       antAction.direction = Direction.NORTHWEST;
     }
-    else if (waterX == antX + 1 && waterY == antY + 1)
+    else if (world[antX+1][antY+1].landType==LandType.WATER)
     {
       antAction.direction = Direction.SOUTHEAST;
     }
-    else if (waterX == antX - 1 && waterY == antY + 1)
+    else if (world[antX-1][antY+1].landType==LandType.WATER)
     {
       antAction.direction = Direction.SOUTHWEST;
     }
-    else if (waterX == antX + 1 && waterY == antY)
+    else if (world[antX+1][antY].landType==LandType.WATER)
     {
       antAction.direction = Direction.EAST;
     }
-    else if (waterX == antX - 1 && waterY == antY)
+    else if (world[antX-1][antY].landType==LandType.WATER)
+    {
+      antAction.direction = Direction.WEST;
+    }
+    else
+    {
+      return false;
+    }
+    antAction.type = AntAction.AntActionType.PICKUP;
+    System.out.println("Ant with id="+antData.id+" found water and will pick it up.");
+    return true;
+  }
+  
+  //work on this
+  @Override
+  public boolean attackAdjacent()
+  {
+    int antX = antData.gridX;
+    int antY = antData.gridY;
+    int enemyAntX = 65;
+    int enemyAntY = 140;
+    
+    if (commData.enemyAntSet.isEmpty())
+    {
+      return false;
+    }
+    
+    for (AntData enemyAnt : commData.enemyAntSet)
+    {
+      enemyAntX = enemyAnt.gridX;
+      enemyAntY = enemyAnt.gridY;
+    }
+    antAction.type = AntAction.AntActionType.ATTACK;
+    if (enemyAntX == antX && enemyAntY == antY - 1)
+    {
+      antAction.direction = Direction.NORTH;
+    }
+    else if (enemyAntX == antX && enemyAntY == antY + 1)
+    {
+      antAction.direction = Direction.SOUTH;
+    }
+    else if (enemyAntX == antX + 1 && enemyAntY == antY - 1)
+    {
+      antAction.direction = Direction.NORTHEAST;
+    }
+    else if (enemyAntX == antX - 1 && enemyAntY == antY - 1)
+    {
+      antAction.direction = Direction.NORTHWEST;
+    }
+    else if (enemyAntX == antX + 1 && enemyAntY == antY + 1)
+    {
+      antAction.direction = Direction.SOUTHEAST;
+    }
+    else if (enemyAntX == antX - 1 && enemyAntY == antY + 1)
+    {
+      antAction.direction = Direction.SOUTHWEST;
+    }
+    else if (enemyAntX == antX + 1 && enemyAntY == antY)
+    {
+      antAction.direction = Direction.EAST;
+    }
+    else if (enemyAntX == antX - 1 && enemyAntY == antY)
     {
       antAction.direction = Direction.WEST;
     }
@@ -347,15 +387,50 @@ public class RandomWalkAI extends AI
     return true;
   }
   
+  public boolean withinAggro(int myAntX, int myAntY,
+                             int enemyAntX, int enemyAntY)
+  {
+    if (Util.manhattanDistance(myAntX, myAntY, enemyAntX, enemyAntY) <= aggroRadius)
+    {
+      return true;
+    }
+    return false;
+  }
+  
+  public boolean goToEnemyAnt()
+  {
+    if (commData.enemyAntSet.isEmpty())
+    {
+      return false;
+    }
+    for (AntData enemyAnt : commData.enemyAntSet)
+    {
+      for (AntData myAnt : commData.myAntList)
+      {
+        if (withinAggro(myAnt.gridX, myAnt.gridY, enemyAnt.gridX, enemyAnt.gridY))
+        {
+          antAction.type = AntAction.AntActionType.MOVE;
+          antAction = chooseDirection(myAnt.gridX, myAnt.gridY, enemyAnt.gridX, enemyAnt.gridY);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
+  
   @Override
   public AntAction chooseAction()
   {
     antAction = new AntAction(AntAction.AntActionType.STASIS);
-//        AntAction action = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
-  
+    
     if (exitNest()) return this.antAction; //always exit nest first
   
+    if (attackAdjacent()) return this.antAction;
+    
+    if (goToEnemyAnt()) return this.antAction; //always attack when sees an ant
+    
     if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood() or goToWater()
     
     if (pickUpWater()) return this.antAction;
@@ -363,17 +438,13 @@ public class RandomWalkAI extends AI
     if (goToWater()) return this.antAction;
   
     if (pickUpFoodAdjacent()) return this.antAction;
-  
+    
     if (goToFood()) return this.antAction;
-  
+    
     if (goExplore()) return this.antAction;
-  
-    if (attackAdjacent()) return this.antAction;
-  
-    if (goToEnemyAnt()) return this.antAction;
-  
+    
     if (goToGoodAnt()) return this.antAction;
-  
+    
     return this.antAction;
   }
   

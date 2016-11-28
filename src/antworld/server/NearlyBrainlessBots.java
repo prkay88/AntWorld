@@ -115,9 +115,12 @@ public class NearlyBrainlessBots
     }
    
     ant.myAction.type = AntActionType.EXIT_NEST;
+    //TODO: uncomment for proper behavior
     ant.myAction.x = myNest.centerX - Constants.NEST_RADIUS + random.nextInt(2 * Constants.NEST_RADIUS);
     ant.myAction.y = myNest.centerY - Constants.NEST_RADIUS + random.nextInt(2 * Constants.NEST_RADIUS);
-
+//    ant.myAction.x = myNest.centerX - 9; //TODO: delete this
+//    ant.myAction.y = myNest.centerY + 9;     //TODO: delete this
+    
     return true;
   }
   
@@ -340,7 +343,8 @@ public class NearlyBrainlessBots
     
     if (dir == null) return false;
     ant.myAction.type = AntActionType.MOVE;
-    ant.myAction.direction = dir;
+    ant.myAction.direction = dir; //TODO: uncomment for proper behavior
+//    ant.myAction.direction = Direction.WEST; //TODO: delete this for proper behavior
     return true;
   }
   
