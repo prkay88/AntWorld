@@ -86,7 +86,6 @@ public class AI
   //=============================================================================
   public boolean exitNest()
   {
-    
     return false;
   }
   
