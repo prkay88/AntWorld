@@ -271,6 +271,7 @@ public class ClientRandomWalk
           AntData antData = commData.myAntList.get(0);
           ClientCell start = world[antData.gridX][antData.gridY];
           ClientCell goal = world[food.gridX][food.gridY];
+          System.out.println("FINDING A PATH FROM X: " + antData.gridX + " Y: " + antData.gridY + " TO X: " + food.gridX+ " Y: "+food.gridY);
           AStar test = new AStar(start, goal);
           LinkedList<ClientCell> path = test.findPath();
         }

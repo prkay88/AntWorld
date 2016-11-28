@@ -34,6 +34,7 @@ public class AStar {
 
   public LinkedList<ClientCell> findPath()
   {
+    System.out.println("I'm in the find path method");
     LinkedList<ClientCell> path = new LinkedList<>();
     LinkedHashMap<ClientCell, ClientCell> cameFrom = new LinkedHashMap<>();
     HashMap<ClientCell, Integer> costSoFar = new HashMap<>();
@@ -46,13 +47,15 @@ public class AStar {
 
     while(!frontier.isEmpty())
     {
+      //System.out.println("AStar frontier is not empty");
       ClientCell current = frontier.poll();
       if(current.equals(goal))
       {
         previous = current;
         break;
       }
-      if(current.neighbors == null || current.neighbors.isEmpty()) current.findNeighbors();
+      //if(current.neighbors == null || current.neighbors.isEmpty())
+      current.findNeighbors();
       for(ClientCell clientCell : current.neighbors)
       {
         newCost = costSoFar.get(current) + current.height;

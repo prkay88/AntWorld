@@ -23,6 +23,8 @@ public class ClientCell
     this.landType = landType;
     this.height = height;
     this.foodType = null;
+    this.x = x;
+    this.y = y;
 
   }
 
@@ -52,6 +54,7 @@ public class ClientCell
           if(y + j >= 0 && y + j <= ClientRandomWalk.mapHeight)
           {
             neighbors.add(ClientRandomWalk.world[x+i][y+j]);
+            //System.out.println(x+i + " and " + y+j + " are neighbors of " + x + " and " + y );
           }
         }
       }
