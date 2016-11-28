@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
 import java.util.Random;
 
 import antworld.common.*;
@@ -21,6 +22,8 @@ public class ClientRandomWalk
   private NestNameEnum myNestName = null;
 //  private NestNameEnum myNestName = NestNameEnum.ARMY;
   private int centerX, centerY;
+  public static int mapWidth, mapHeight;
+
   
   //cell class in client, not sure if we can use the one in server package
   static ClientCell[][] world; //contains all the land types of the map being used
@@ -51,6 +54,7 @@ public class ClientRandomWalk
     testAI = new RandomWalkAI(data, null);
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
+    createMap();
     mainGameLoop(data);
     closeAll();
   }
@@ -166,11 +170,18 @@ public class ClientRandomWalk
     return null;
   }
 
-  public void mainGameLoop(CommData data)
+  private void createMap()
   {
     BufferedImage map = Util.loadImage("SmallMap3.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
+  }
+
+  public void mainGameLoop(CommData data)
+  {
+    //BufferedImage map = Util.loadImage("SmallMap3.png", null);
+    //System.out.println("Is map null? map="+map);
+    //readMap(map);
     //seems to work:
 //    for(int y=0; y<map.getHeight(); y++)
 //    {
@@ -249,21 +260,43 @@ public class ClientRandomWalk
   private void chooseActionsOfAllAnts(CommData commData)
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
+    testAI.setCommData(commData);
+    int count =0;
+    if(commData.foodSet != null && !commData.foodSet.isEmpty())
+    {
+      for(FoodData food : commData.foodSet)
+      {
+        if(count == 0)
+        {
+          AntData antData = commData.myAntList.get(0);
+          ClientCell start = world[antData.gridX][antData.gridY];
+          ClientCell goal = world[food.gridX][food.gridY];
+          AStar test = new AStar(start, goal);
+          LinkedList<ClientCell> path = test.findPath();
+        }
+        count++;
+      }
+    }
+    //setting food locations on the map.
+    for(FoodData food : commData.foodSet)
+    {
+      world[food.gridX][food.gridY].setFoodType(food.foodType);
+      System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
+    }
     for (AntData ant : commData.myAntList)
     {
       testAI.setAntData(ant);
       ant.myAction = testAI.chooseAction(); //something weird here
     }
-    for (FoodData f : commData.foodSet)
-    {
-      System.out.println("Food: (" + f.gridX + ", " + f.gridY+"), Count: "+ f.count);
-    }
+
   }
   
   public void readMap(BufferedImage map)
   {
     int mapWidth = map.getWidth();
     int mapHeight = map.getHeight();
+    this.mapHeight = mapHeight;
+    this.mapWidth = mapWidth;
     world = new ClientCell[mapWidth][mapHeight];
     for(int y=0; y<mapHeight; y++)
     {
@@ -288,10 +321,14 @@ public class ClientRandomWalk
         // System.out.println("("+x+","+y+") rgb="+rgb +
         // ", landType="+landType
         // +" height="+height);
-        world[x][y] = new ClientCell(landType, height);
+        world[x][y] = new ClientCell(landType, height, x, y);
       }
     }
   }
+
+
+
+
   
   public static void main(String[] args)
   {
