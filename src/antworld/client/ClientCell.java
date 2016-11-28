@@ -25,7 +25,13 @@ public class ClientCell
     this.foodType = null;
     this.x = x;
     this.y = y;
+    setWaterHeight();
 
+  }
+
+  private void setWaterHeight()
+  {
+    if(this.landType.equals(LandType.WATER)) this.height = 10000000;
   }
 
   public void setFoodType(FoodType foodType)
