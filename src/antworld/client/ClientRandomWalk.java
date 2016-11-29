@@ -130,7 +130,7 @@ public class ClientRandomWalk
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
       //TODO: Uncomment for proper behavior
 //      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
-      NestNameEnum requestedNest = NestNameEnum.ARMY;
+      NestNameEnum requestedNest = NestNameEnum.HARVESTER;
       CommData data = new CommData(requestedNest, myTeam);
       data.password = password;
 
@@ -172,7 +172,7 @@ public class ClientRandomWalk
 
   private void createMap()
   {
-    BufferedImage map = Util.loadImage("SmallMap1.png", null);
+    BufferedImage map = Util.loadImage("AStarTest1.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
   }
@@ -326,10 +326,6 @@ public class ClientRandomWalk
       }
     }
   }
-
-
-
-
   
   public static void main(String[] args)
   {

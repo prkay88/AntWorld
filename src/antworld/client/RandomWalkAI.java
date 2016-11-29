@@ -2,12 +2,17 @@ package antworld.client;
 
 import antworld.common.*;
 
+import java.util.LinkedList;
+
 /**
  * Created by Phillip on 11/18/2016.
  */
 public class RandomWalkAI extends AI
 {
   private int aggroRadius = 10;
+  private int healthThreshold = 5;
+  AStar AStarObject;
+  LinkedList<ClientCell> AStarPath = null;
   
   public RandomWalkAI(CommData data, AntData antData)
   {
@@ -17,6 +22,7 @@ public class RandomWalkAI extends AI
     centerY = commData.nestData[commData.myNest.ordinal()].centerY;
 //    antAction.type = AntAction.AntActionType.STASIS;
 //    this.antData = antData;
+    AStarObject = null;
   }
   
   private AntAction chooseDirection(int startX, int startY, int goalX, int goalY)
@@ -82,14 +88,14 @@ public class RandomWalkAI extends AI
   public boolean exitNest()
   {
     System.out.println("Inside RWAI exitNest");
-    if (antData.underground)
+    if (antData.underground && antData.health >= 20)
     {
       antAction.type = AntAction.AntActionType.EXIT_NEST;
       //when food is EAST of the nest
-//      antAction.x = centerX + Constants.NEST_RADIUS-1;
-//      antAction.y = centerY;
-      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
-      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+      antAction.x = centerX;
+      antAction.y = centerY + Constants.NEST_RADIUS-1;
+//      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+//      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
       return true;
     }
     return false;
@@ -169,7 +175,7 @@ public class RandomWalkAI extends AI
       return true;
     }
     //must see no ants have health less than 18
-    else if (antData.carryUnits == 0 && antData.health <= 18)
+    else if (antData.carryUnits == 0 && antData.health <= healthThreshold)
     {
       if (Util.manhattanDistance(antData.gridX, antData.gridY, centerX, centerY) <= Constants.NEST_RADIUS)
       {
@@ -202,7 +208,18 @@ public class RandomWalkAI extends AI
       }
       if (goToX != 0 && goToY != 0)
       {
-        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
+        if (AStarObject == null)
+        {
+//          System.out.println("Computing the AStarPath to food");
+          //TODO: Testing A Star to go to food
+          ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
+          ClientCell foodCell = ClientRandomWalk.world[goToX][goToY];
+          AStarObject = new AStar(antCell, foodCell);
+          AStarPath = AStarObject.findPath();
+          ClientCell nextInPath = AStarPath.poll();
+          antAction = chooseDirection(antData.gridX, antData.gridY, nextInPath.x, nextInPath.y);
+        }
+//        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
         System.out.println("Will have ActionType MOVE");
         return true;
       }
@@ -239,7 +256,7 @@ public class RandomWalkAI extends AI
   @Override
   public boolean goToWater()
   {
-    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 120)
+    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 100)
     {
       int antX = antData.gridX;
       int antY = antData.gridY;
@@ -424,6 +441,15 @@ public class RandomWalkAI extends AI
   {
     antAction = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
+    
+    if (AStarPath != null && !AStarPath.isEmpty())
+    {
+      System.out.println("following the path produced by AStar");
+      antAction.type = AntAction.AntActionType.MOVE;
+      ClientCell nextToDestination = AStarPath.poll();
+      antAction = chooseDirection(antData.gridX, antData.gridY, nextToDestination.x, nextToDestination.y);
+      return this.antAction;
+    }
     
     if (exitNest()) return this.antAction; //always exit nest first
   

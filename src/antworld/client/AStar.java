@@ -1,7 +1,6 @@
 package antworld.client;
 
 import antworld.common.Util;
-
 import java.util.*;
 
 /**
@@ -67,8 +66,6 @@ public class AStar {
           clientCell.setCost(priority);
           frontier.add(clientCell);
           cameFrom.put(clientCell, current);
-
-
         }
       }
     }
@@ -82,7 +79,7 @@ public class AStar {
     }
     return path;
   }
-
+  
   public LinkedList<ClientCell> printPath(LinkedHashMap<ClientCell, ClientCell> cameFrom, ClientCell goal)
   {
     LinkedList<ClientCell> path = new LinkedList<>();

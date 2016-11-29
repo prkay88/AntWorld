@@ -71,7 +71,7 @@ public class AntWorld implements ActionListener
     }
     else if (DEBUG)
     {
-      map = Util.loadImage("SmallMap1.png", window);
+      map = Util.loadImage("AStarTest1.png", window);
     }
     worldWidth = map.getWidth();
     worldHeight = map.getHeight();
@@ -556,8 +556,10 @@ public class AntWorld implements ActionListener
       {
         if(mapNum == 3)
         {
-          spawnX =  81;
-          spawnY = 48;
+          spawnX = 175;
+          spawnY = 218;
+//          spawnX =  81;
+//          spawnY = 48;
         }
 //        //Put food EAST
 //        spawnX = 209 + 25; //xCenter of ARMY ant nest spawn + 30 units to the right.
