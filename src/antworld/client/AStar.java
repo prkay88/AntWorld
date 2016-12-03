@@ -23,6 +23,22 @@ public class AStar {
 
   public AStar(ClientCell start, ClientCell goal)
   {
+    if (start != null && goal != null)
+    {
+      this.startX = start.x;
+      this.startY = start.y;
+      this.goalX = goal.x;
+      this.goalY = goal.y;
+      this.start = start;
+      this.goal = goal;
+    }
+  }
+
+  //we just call this before we call findPath() so that we don't need to recreate a new aStarObject()
+  //to find A* paths.
+  public void setBeginAndEnd(ClientCell start, ClientCell goal)
+  {
+    frontier.clear();
     this.startX = start.x;
     this.startY = start.y;
     this.goalX = goal.x;
@@ -30,7 +46,7 @@ public class AStar {
     this.start = start;
     this.goal = goal;
   }
-
+  
   public LinkedList<ClientCell> findPath()
   {
     System.out.println("I'm in the find path method");
@@ -57,6 +73,9 @@ public class AStar {
       current.findNeighbors();
       for(ClientCell clientCell : current.neighbors)
       {
+//        System.out.println("In AStar "+ "current's type="+current.landType+ ", its cost="+(costSoFar.get(current))
+//        +" its coordinates="+" ("+current.x+", "+current.y+") "+"clientCell=("+clientCell.x+", "+clientCell.y+")"); //TODO: this is where the null pointer exception is
+//        System.out.println("costSoFar contains key current="+current+"?"+costSoFar.containsKey(current));
         newCost = costSoFar.get(current) + current.height;
 
         if(!costSoFar.containsKey(clientCell) || newCost < costSoFar.get(clientCell))

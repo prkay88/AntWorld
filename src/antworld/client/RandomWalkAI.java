@@ -1,8 +1,11 @@
 package antworld.client;
 
 import antworld.common.*;
+import com.sun.deploy.util.SessionState;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Phillip on 11/18/2016.
@@ -11,8 +14,11 @@ public class RandomWalkAI extends AI
 {
   private int aggroRadius = 10;
   private int healthThreshold = 5;
-  AStar AStarObject;
-  LinkedList<ClientCell> AStarPath = null;
+  AStar aStarObject; //initialized to null beginning and end
+  LinkedList<ClientCell> AStarPath = null; //look at how AI is given to the ants
+  ConcurrentHashMap<Integer, AntStatus> antStatusHashMap = new ConcurrentHashMap<>(); //contains all the ant IDs and their AntStatus
+  ConcurrentHashMap<ClientCell, FoodStatus> foodBank = new ConcurrentHashMap<>();
+//  ArrayList<FoodStatus> foodBank = new ArrayList<>();
   
   public RandomWalkAI(CommData data, AntData antData)
   {
@@ -22,7 +28,7 @@ public class RandomWalkAI extends AI
     centerY = commData.nestData[commData.myNest.ordinal()].centerY;
 //    antAction.type = AntAction.AntActionType.STASIS;
 //    this.antData = antData;
-    AStarObject = null;
+    aStarObject = new AStar(null,null);
   }
   
   private AntAction chooseDirection(int startX, int startY, int goalX, int goalY)
@@ -81,6 +87,7 @@ public class RandomWalkAI extends AI
 //        Direction dir = Direction.NORTH; //go north
     antAction.type = AntAction.AntActionType.MOVE;
     antAction.direction = dir;
+//    antAction.direction = Direction.SOUTH;
     return true;
   }
   
@@ -92,10 +99,10 @@ public class RandomWalkAI extends AI
     {
       antAction.type = AntAction.AntActionType.EXIT_NEST;
       //when food is EAST of the nest
-      antAction.x = centerX;
-      antAction.y = centerY + Constants.NEST_RADIUS-1;
-//      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
-//      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+//      antAction.x = centerX - 9;
+//      antAction.y = centerY;
+      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
       return true;
     }
     return false;
@@ -208,18 +215,54 @@ public class RandomWalkAI extends AI
       }
       if (goToX != 0 && goToY != 0)
       {
-        if (AStarObject == null)
+        //put in foodBank when food is found, it should be there until its count drops to 0
+        ClientCell foodCell = ClientRandomWalk.world[goToX][goToY];
+        aStarObject.setBeginAndEnd(ClientRandomWalk.world[centerX][centerY], foodCell);
+//        System.out.println("In goToFood(), findingPath from nest to food, HARVESTER nest center coords= ("+centerX+", "+centerY+")");
+        FoodStatus food = null;
+        if (!foodBank.containsKey(foodCell))
         {
-//          System.out.println("Computing the AStarPath to food");
-          //TODO: Testing A Star to go to food
-          ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
-          ClientCell foodCell = ClientRandomWalk.world[goToX][goToY];
-          AStarObject = new AStar(antCell, foodCell);
-          AStarPath = AStarObject.findPath();
-          ClientCell nextInPath = AStarPath.poll();
-          antAction = chooseDirection(antData.gridX, antData.gridY, nextInPath.x, nextInPath.y);
+          food = new FoodStatus(foodCell, aStarObject.findPath());
+          foodBank.put(foodCell, food); //add the new food
         }
-//        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
+        else
+        {
+          food = foodBank.get(foodCell);
+        }
+        AntStatus antStatus = antStatusHashMap.get(antData.id);
+        if (antStatus.path.isEmpty())
+        {
+          ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
+          aStarObject.setBeginAndEnd(antCell, food.currentPathHead);
+          System.out.println("food.currentPathHead coordinates = ("+food.currentPathHead.x +", "+food.currentPathHead.y+")");
+          food.antSecureSpotInAssemblyLine(); //move the assembly line's path head
+          //TODO: one of the neighbors are null? OR is it because our ant is in the nest?
+          antStatus.path = aStarObject.findPath(); //set this path as the path for the ant
+          ClientCell next = antStatus.path.peek();
+          ClientCell nextInPath = null;
+          ClientCell last = antStatus.path.getLast();
+          //TODO: Start working here
+          antStatus.path.poll(); //because the first position is the ants position
+          if (!positionTaken(next.x, next.y))
+          {
+            nextInPath = antStatus.path.poll();
+            findDirectionForActionThatRequiresIt(antData.gridX, antData.gridY, nextInPath.x, nextInPath.y);
+          }
+          else
+          {
+//            antAction.type = AntAction.AntActionType.STASIS;
+            antAction.type = AntAction.AntActionType.MOVE;
+            antAction = chooseDirection(antData.gridX, antData.gridY, last.x, last.y);
+            int altDeltaX = antAction.direction.deltaX();
+            int altDeltaY = antAction.direction.deltaY();
+            if(Util.manhattanDistance(antData.gridX+altDeltaX, antData.gridY+altDeltaY, last.x, last.y) <
+                    Util.manhattanDistance(next.x, next.y, last.x, last.y))
+            {
+              antStatus.path.poll(); //remove the next in the path if we skipped over it
+            }
+          }
+          antStatus.type = AntStatus.StatusType.GOING_TO_ASSEMBLY; //so far it's the only type we have;
+        }
         System.out.println("Will have ActionType MOVE");
         return true;
       }
@@ -439,17 +482,65 @@ public class RandomWalkAI extends AI
   @Override
   public AntAction chooseAction()
   {
+    //because hashMap overwrites existing values!
+    if (!antStatusHashMap.containsKey(antData.id))
+    {
+      //if null StatusType in AntStatus, ants has normal StatusType
+      antStatusHashMap.put(antData.id, new AntStatus());
+    }
+    
     antAction = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
     
-    if (AStarPath != null && !AStarPath.isEmpty())
+    //follow the A* path if going to Assembly Line
+    AntStatus antStatus = antStatusHashMap.get(antData.id);
+    
+    if (antStatus.type == AntStatus.StatusType.IN_ASSEMBLY)
     {
-      System.out.println("following the path produced by AStar");
-      antAction.type = AntAction.AntActionType.MOVE;
-      ClientCell nextToDestination = AStarPath.poll();
-      antAction = chooseDirection(antData.gridX, antData.gridY, nextToDestination.x, nextToDestination.y);
-      return this.antAction;
+      System.out.println("did the ant get to assembly? Is the path empty" + antStatus.path.isEmpty());
+      return antAction;
     }
+    if (antStatus.type == AntStatus.StatusType.GOING_TO_ASSEMBLY)
+    {
+      System.out.println("did the ant get to assembly? Is the path empty" + antStatus.path.isEmpty());
+      if (antStatus.path.isEmpty())
+      {
+        antStatus.type = AntStatus.StatusType.IN_ASSEMBLY;
+        return antAction;
+      }
+      ClientCell next = antStatus.path.peek();
+      if (positionTaken(next.x, next.y))
+      {
+        antAction.type = AntAction.AntActionType.MOVE;
+        ClientCell last = antStatus.path.getLast();
+        antAction = chooseDirection(antData.gridX, antData.gridY, last.x, last.y);
+        int altDeltaX = antAction.direction.deltaX();
+        int altDeltaY = antAction.direction.deltaY();
+        //if next is the last position in the A* path from ant to its spot in assembly line, poll it
+        if(Util.manhattanDistance(antData.gridX+altDeltaX, antData.gridY+altDeltaY, last.x, last.y) <
+                Util.manhattanDistance(next.x, next.y, last.x, last.y))
+        {
+          antStatus.path.poll(); //remove the next in the path if we skipped over it
+        }
+        return antAction; //stasis, don't move if another ant is there
+      }
+      antAction.type = AntAction.AntActionType.MOVE;
+      ClientCell nextInPath = antStatus.path.poll();
+      System.out.println("nextInPath="+nextInPath);
+      
+      antAction = chooseDirection(antData.gridX, antData.gridY, nextInPath.x, nextInPath.y);
+//      findDirectionForActionThatRequiresIt(antData.gridX, antData.gridY, nextInPath.x, nextInPath.y);
+      return antAction;
+    }
+    
+//    if (AStarPath != null && !AStarPath.isEmpty())
+//    {
+//      System.out.println("following the path produced by AStar");
+//      antAction.type = AntAction.AntActionType.MOVE;
+//      ClientCell nextToDestination = AStarPath.poll();
+//      antAction = chooseDirection(antData.gridX, antData.gridY, nextToDestination.x, nextToDestination.y);
+//      return this.antAction;
+//    }
     
     if (exitNest()) return this.antAction; //always exit nest first
   

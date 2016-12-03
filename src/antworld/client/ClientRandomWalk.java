@@ -200,10 +200,10 @@ public class ClientRandomWalk
       {
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
-
         chooseActionsOfAllAnts(data);
         CommData sendData = data.packageForSendToServer();
-
+        System.out.println("testAI.antStatusHashMap size="+testAI.antStatusHashMap.size());
+          
         System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
         outputStream.writeObject(sendData);
         outputStream.flush();
@@ -261,24 +261,24 @@ public class ClientRandomWalk
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
     testAI.setCommData(commData);
-    int count =0;
-    if(commData.foodSet != null && !commData.foodSet.isEmpty())
-    {
-      for(FoodData food : commData.foodSet)
-      {
-        if(count == 0)
-        {
-          AntData antData = commData.myAntList.get(0);
-          ClientCell start = world[antData.gridX][antData.gridY];
-          ClientCell goal = world[food.gridX][food.gridY];
-          System.out.println("FINDING A PATH FROM X: " + antData.gridX + " Y: " + antData.gridY + " TO X: " + food.gridX+ " Y: "+food.gridY);
-          AStar test = new AStar(start, goal);
-          LinkedList<ClientCell> path = test.findPath();
-        }
-        count++;
-      }
-    }
-    //setting food locations on the map.
+//    int count =0;
+//    if(commData.foodSet != null && !commData.foodSet.isEmpty())
+//    {
+//      for(FoodData food : commData.foodSet)
+//      {
+//        if(count == 0)
+//        {
+//          AntData antData = commData.myAntList.get(0);
+//          ClientCell start = world[antData.gridX][antData.gridY];
+//          ClientCell goal = world[food.gridX][food.gridY];
+//          System.out.println("FINDING A PATH FROM X: " + antData.gridX + " Y: " + antData.gridY + " TO X: " + food.gridX+ " Y: "+food.gridY);
+//          AStar test = new AStar(start, goal);
+//          LinkedList<ClientCell> path = test.findPath();
+//        }
+//        count++;
+//      }
+//    }
+    //TODO: setting food locations on the map.
     for(FoodData food : commData.foodSet)
     {
       world[food.gridX][food.gridY].setFoodType(food.foodType);
@@ -313,6 +313,11 @@ public class ClientRandomWalk
         else if (rgb == 0x1E90FF)
         {
           landType = LandType.WATER;
+        }
+        else if (rgb == 0x000000)
+        {
+          //treat black dots as grass
+          landType = LandType.GRASS;
         }
         else
         {
