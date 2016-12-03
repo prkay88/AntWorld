@@ -21,7 +21,7 @@ public class ClientCell
   public ClientCell(LandType landType, int height, int x, int y)
   {
     this.landType = landType;
-    
+    this.height = height;
     this.foodType = null;
     this.x = x;
     this.y = y;
