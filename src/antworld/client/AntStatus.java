@@ -1,5 +1,8 @@
 package antworld.client;
 
+import antworld.common.Direction;
+import com.sun.deploy.util.SessionState;
+
 import java.util.LinkedList;
 
 /**
@@ -7,13 +10,31 @@ import java.util.LinkedList;
  */
 public class AntStatus
 {
-  enum StatusType
+  enum CurrentAction
   {
-    IN_ASSEMBLY,       //already in assembly line
-    GOING_TO_ASSEMBLY, //going to assembly
+//    IN_ASSEMBLY,       //already in assembly line
+//    GOING_TO_ASSEMBLY, //going to assembly
+    ROAMING,          //doing nothing
+    FOLLOWING_FOOD,   //going to a food that is found
+    GOING_HOME
+  }
+
+//  StatusType type = null; //normal, not involved in assembly lines
+  Direction mainDirection = null;
+  LinkedList<ClientCell> path = new LinkedList<>();
+  CurrentAction action = CurrentAction.ROAMING;
+  int nextCellIndex; //initializes to 0
+  ClientCell targetfoodCell;
+//  FoodStatus targetFood;
+//  int indexInAssembly;
+
+  public AntStatus(Direction mainDirection)
+  {
+    this.mainDirection = mainDirection;
   }
   
-  StatusType type = null; //normal, not involved in assembly lines
-  LinkedList<ClientCell> path = new LinkedList<>();
-  
+  public void setPath(LinkedList<ClientCell> path)
+  {
+    this.path = path;
+  }
 }

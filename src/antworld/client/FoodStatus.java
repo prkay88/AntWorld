@@ -37,9 +37,9 @@ public class FoodStatus
   public void antSecureSpotInAssemblyLine()
   {
     //doesn't get subtracted because in randomWalkAi goToFood(), the object gets recreated.
-    System.out.print("ant secured a spot in assembly line, before subtraction: currenPathHeadIndex is="+currentPathHeadIndex+", ");
+//    System.out.print("ant secured a spot in assembly line, before subtraction: currenPathHeadIndex is="+currentPathHeadIndex+", ");
     currentPathHeadIndex-=2;
-    System.out.println("after subtraction currentPathHeadIndex="+currentPathHeadIndex);
+//    System.out.println("after subtraction currentPathHeadIndex="+currentPathHeadIndex);
     currentPathHead = pathFromNestToFood.get(currentPathHeadIndex);
   }
 }
