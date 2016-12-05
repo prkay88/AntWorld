@@ -3,7 +3,6 @@ package antworld.client;
 import antworld.common.AntAction;
 import antworld.common.AntData;
 import antworld.common.CommData;
-import antworld.common.LandType;
 
 import java.util.Random;
 
@@ -84,7 +83,7 @@ public class AI
   //   antAction is underground.
   // Returns true if an action was set. Otherwise returns false
   //=============================================================================
-  public boolean exitNest()
+  public boolean underGroundAction()
   {
     return false;
   }
@@ -143,7 +142,7 @@ public class AI
     
     if (antData.ticksUntilNextAction > 0) return this.antAction;
     
-    if (exitNest()) return this.antAction; //always exit nest first
+    if (underGroundAction()) return this.antAction; //always exit nest first
     
     if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood()
     

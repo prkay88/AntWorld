@@ -68,6 +68,7 @@ public enum AntType
   public abstract FoodType[] getBirthFood();
   public int getMaxHealth() {return 20;}
   public int getAttackDiceD4() {return 2;} //actual damage is the sum of n uniformly distributed 1-4.
+//  public double getAttritionDamageProbability() {return 0.25;} //TODO: the real one is the one below
   public double getAttritionDamageProbability() {return 0.001;}
   public int getBaseMovementTicksPerCell() {return 2;}
   public int getUpHillMultiplier() {return 5;}

@@ -1,9 +1,7 @@
 package antworld.client;
 
 import antworld.common.*;
-import com.sun.deploy.util.SessionState;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,7 +13,7 @@ public class RandomWalkAI extends AI
 {
   
   private int aggroRadius = 10;
-  private int healthThreshold = 5;
+  private int healthThreshold = 19;
   AStar aStarObject; //initialized to null beginning and end
   LinkedList<ClientCell> AStarPath = null; //look at how AI is given to the ants
   ConcurrentHashMap<Integer, AntStatus> antStatusHashMap = new ConcurrentHashMap<>(); //contains all the ant IDs and their AntStatus
@@ -91,7 +89,7 @@ public class RandomWalkAI extends AI
 //      System.out.println("FINDING ALTERNATIVE PATH.");
       //problem is breaking ties with two paths that have the same manhattan distance
       antAction.direction = Direction.getRandomDir();
-      antAction.type = AntAction.AntActionType.STASIS;
+//      antAction.type = AntAction.AntActionType.STASIS;
     }
 //    updateMap(antAction.direction);
     return antAction;
@@ -123,20 +121,28 @@ public class RandomWalkAI extends AI
   }
   
   @Override
-  public boolean exitNest()
+  public boolean underGroundAction()
   {
-    System.out.println("Inside RWAI exitNest");
-    if (antData.underground && antData.health >= 20)
+    System.out.println("Inside RWAI underGroundAction");
+    if (antData.id != Constants.UNKNOWN_ANT_ID && antData.underground)
     {
-      antAction.type = AntAction.AntActionType.EXIT_NEST;
-      //when food is EAST of the nest
-      antAction.x = centerX;
-      antAction.y = centerY - Constants.NEST_RADIUS;
+      if (antData.health >= healthThreshold)
+      {
+        antAction.type = AntAction.AntActionType.EXIT_NEST;
+        //when food is EAST of the nest
+//      antAction.x = centerX;
+//      antAction.y = centerY - Constants.NEST_RADIUS;
 //      antAction.x = centerX - Constants.NEST_RADIUS;
 //      antAction.y = centerY;
-//      antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
-//      antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+        antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+        antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
 //      ClientRandomWalk.world[antAction.x][antAction.y].height+=100000000; //ants occupy cells now
+      }
+      else if (antData.health < healthThreshold)
+      {
+        //this is how ants heal
+        antAction.type = AntAction.AntActionType.HEAL;
+      }
       return true;
     }
     return false;
@@ -158,8 +164,8 @@ public class RandomWalkAI extends AI
     int foodY = food.gridY;
     
     antAction.type = AntAction.AntActionType.PICKUP;
-//    antAction.quantity = antData.antType.getCarryCapacity(); //TODO: better so far, uncomment for proper behavior
-    antAction.quantity = 1;
+    antAction.quantity = antData.antType.getCarryCapacity(); //TODO: better so far, uncomment for proper behavior
+//    antAction.quantity = 1;
     if (foodX == antX && foodY == antY - 1)
     {
       antAction.direction = Direction.NORTH;
@@ -257,12 +263,18 @@ public class RandomWalkAI extends AI
         antStatus.targetfoodCell = foodCell;
         aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], foodCell);
         antStatus.setPath(aStarObject.findPath());
+        //need to poll first and last to have proper behavior
+        antStatus.path.pollFirst();
+        antStatus.path.pollLast();
         int nextX = antStatus.path.get(antStatus.nextCellIndex).x;
         int nextY = antStatus.path.get(antStatus.nextCellIndex).y;
         antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
         if (antStatus.nextCellIndex < antStatus.path.size())
         {
-          antStatus.nextCellIndex++;
+          if (!positionTaken(nextX, nextY))
+          {
+            antStatus.nextCellIndex++;
+          }
         }
         antStatus.action = AntStatus.CurrentAction.FOLLOWING_FOOD;
 //        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY); //uncomment for proper behavior
@@ -529,10 +541,14 @@ public class RandomWalkAI extends AI
     return false;
   }
   
-  
   @Override
   public AntAction chooseAction()
   {
+    //so that the newly spawned ants from client random walk will not have to ChooseAction
+    if (antData.id == Constants.UNKNOWN_ANT_ID)
+    {
+      return antAction;
+    }
     //because hashMap overwrites existing values!
     if (!antStatusHashMap.containsKey(antData.id))
     {
@@ -540,29 +556,37 @@ public class RandomWalkAI extends AI
       antStatusHashMap.put(antData.id, new AntStatus(Direction.getRandomDir()));
     }
     
+    //priority is to spawn ants
+//    if (spawnNewAnt()) return antAction;
+    
     antAction = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
     
     AntStatus antStatus = antStatusHashMap.get(antData.id);
-    
+    System.out.println("Ant's action is currently:" + antStatus.action);
     if (antStatus.action == AntStatus.CurrentAction.FOLLOWING_FOOD)
     {
-      antAction.type = AntAction.AntActionType.MOVE;
       if (antStatus.nextCellIndex < antStatus.path.size())
       {
+        antAction.type = AntAction.AntActionType.MOVE;
         int nextX = antStatus.path.get(antStatus.nextCellIndex).x;
         int nextY = antStatus.path.get(antStatus.nextCellIndex).y;
         antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
-        antStatus.nextCellIndex++;
+        if (!positionTaken(nextX, nextY))
+        {
+          antStatus.nextCellIndex++;
+        }
         return antAction;
       }
       else
       {
         //food is reached, find an A* path to go home
         ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
-        ClientCell nestCell = ClientRandomWalk.world[centerX-Constants.NEST_RADIUS/2][centerY-Constants.NEST_RADIUS/2];
+        ClientCell nestCell = ClientRandomWalk.world[centerX-Constants.NEST_RADIUS][centerY];
         aStarObject.setBeginAndEnd(antCell, nestCell);
         antStatus.setPath(aStarObject.findPath());
+        antStatus.path.pollFirst();
+        antStatus.path.pollLast();
         antStatus.nextCellIndex = 0; //reset to 0 when going home
         antStatus.action = AntStatus.CurrentAction.GOING_HOME; //just go pass through the if statement, expected to pick up food
       }
@@ -575,8 +599,12 @@ public class RandomWalkAI extends AI
       {
         int nextX = antStatus.path.get(nextCellIndex).x;
         int nextY = antStatus.path.get(nextCellIndex).y;
-        antStatus.nextCellIndex++;
+        antAction.type = AntAction.AntActionType.MOVE;
         antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
+        if (!positionTaken(nextX, nextY))
+        {
+          antStatus.nextCellIndex++;
+        }
         return antAction;
       }
       else
@@ -586,6 +614,8 @@ public class RandomWalkAI extends AI
         {
           aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], antStatus.targetfoodCell);
           antStatus.setPath(aStarObject.findPath());
+          antStatus.path.pollFirst();
+          antStatus.path.pollLast();
           antStatus.nextCellIndex = 0;
           antStatus.action = AntStatus.CurrentAction.FOLLOWING_FOOD;
         }
@@ -672,7 +702,7 @@ public class RandomWalkAI extends AI
     }
     */
     
-    if (exitNest()) return this.antAction; //always exit nest first
+    if (underGroundAction()) return this.antAction; //always exit nest first
   
     if (attackAdjacent()) return this.antAction;
     

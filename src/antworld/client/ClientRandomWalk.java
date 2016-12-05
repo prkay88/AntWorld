@@ -200,7 +200,10 @@ public class ClientRandomWalk
       {
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
+  
         chooseActionsOfAllAnts(data);
+        spawnNewAnt(data); //try to spawn ants when possible
+  
         CommData sendData = data.packageForSendToServer();
         System.out.println("testAI.antStatusHashMap size="+testAI.antStatusHashMap.size());
           
@@ -211,7 +214,6 @@ public class ClientRandomWalk
 
 
         if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
-        //TODO: Server gives us this:
         CommData receivedData = (CommData) inputStream.readObject();
         if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + receivedData);
         data = receivedData;
@@ -261,23 +263,6 @@ public class ClientRandomWalk
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
     testAI.setCommData(commData);
-//    int count =0;
-//    if(commData.foodSet != null && !commData.foodSet.isEmpty())
-//    {
-//      for(FoodData food : commData.foodSet)
-//      {
-//        if(count == 0)
-//        {
-//          AntData antData = commData.myAntList.get(0);
-//          ClientCell start = world[antData.gridX][antData.gridY];
-//          ClientCell goal = world[food.gridX][food.gridY];
-//          System.out.println("FINDING A PATH FROM X: " + antData.gridX + " Y: " + antData.gridY + " TO X: " + food.gridX+ " Y: "+food.gridY);
-//          AStar test = new AStar(start, goal);
-//          LinkedList<ClientCell> path = test.findPath();
-//        }
-//        count++;
-//      }
-//    }
     //TODO: setting food locations on the map.
     for(FoodData food : commData.foodSet)
     {
@@ -287,7 +272,7 @@ public class ClientRandomWalk
     for (AntData ant : commData.myAntList)
     {
       testAI.setAntData(ant);
-      ant.myAction = testAI.chooseAction(); //something weird here
+      ant.myAction = testAI.chooseAction();
     }
 
   }
@@ -328,6 +313,27 @@ public class ClientRandomWalk
         // ", landType="+landType
         // +" height="+height);
         world[x][y] = new ClientCell(landType, height, x, y);
+      }
+    }
+  }
+  
+  //TODO: Start working here, give birth to a new ant
+  public void spawnNewAnt(CommData commData)
+  {
+    AntType[] antTypes = {AntType.ATTACK, AntType.DEFENCE, AntType.MEDIC,
+            AntType.SPEED, AntType.VISION, AntType.WORKER};
+    for (AntType antType : antTypes)
+    {
+//      System.out.println("getFoodUnitsToSpawn() called on " + antType + "=" + (antType.getFoodUnitsToSpawn(FoodType.MEAT)));
+      //if required food type is achieved for every ant type, respawn it
+      if (commData.foodStockPile[FoodType.MEAT.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.MEAT) >= 0 &&
+              commData.foodStockPile[FoodType.NECTAR.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.NECTAR) >= 0 &&
+              commData.foodStockPile[FoodType.SEEDS.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.SEEDS) >= 0)
+      {
+//        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
+//        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
+        commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
+        System.out.println("Spawned a new ant, new antList size="+commData.myAntList.size());
       }
     }
   }

@@ -31,6 +31,14 @@ public class Nest extends NestData implements Serializable
   public static int INVALID_NEST_ID = -1;
 
   private int[] foodStockPile = new int[FoodType.SIZE];
+  
+  //TODO: uncomment for proper behavior
+//  {
+//    for (int i=0; i<foodStockPile.length; i++)
+//    {
+//      foodStockPile[i] = 100000;
+//    }
+//  }
 
   private ArrayList<AntData> antList = new ArrayList<AntData>();
   
@@ -237,7 +245,7 @@ public class Nest extends NestData implements Serializable
     for (int idx=0; idx<commData.myAntList.size(); idx++)
     {
       AntData clientAnt = commData.myAntList.get(idx);
-      
+//      System.out.println("I got your request.");
       if (clientAnt.id == Constants.UNKNOWN_ANT_ID)
       {
         if (clientAnt.myAction.type != AntActionType.BIRTH) continue;
