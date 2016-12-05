@@ -1,5 +1,6 @@
 package antworld.client;
 
+import antworld.common.Constants;
 import antworld.common.Direction;
 import com.sun.deploy.util.SessionState;
 
@@ -8,7 +9,7 @@ import java.util.LinkedList;
 /**
  * Created by Arthur on 11/30/2016.
  */
-public class AntStatus
+public class ExtraAntData
 {
   enum CurrentAction
   {
@@ -25,10 +26,11 @@ public class AntStatus
   CurrentAction action = CurrentAction.ROAMING;
   int nextCellIndex; //initializes to 0
   ClientCell targetfoodCell;
+  int ticksTillUpdate;
 //  FoodStatus targetFood;
 //  int indexInAssembly;
 
-  public AntStatus(Direction mainDirection)
+  public ExtraAntData(Direction mainDirection)
   {
     this.mainDirection = mainDirection;
   }
@@ -36,5 +38,11 @@ public class AntStatus
   public void setPath(LinkedList<ClientCell> path)
   {
     this.path = path;
+  }
+  
+  public void updateRoamingDirection()
+  {
+    mainDirection = Direction.getRandomDir();
+    ticksTillUpdate = Constants.random.nextInt(10);
   }
 }

@@ -8,7 +8,7 @@ public class Constants
   public static final int NEST_RADIUS = 20;
 
   //INITIAL_ANT_SPAWN_COUNT is actually 100
-  public static final int INITIAL_ANT_SPAWN_COUNT = 1;
+  public static final int INITIAL_ANT_SPAWN_COUNT = 8 ;
   public static final int INITIAL_NEST_WATER_UNITS = 100;
   public static final int TIME_STEP_MSEC = 250;
   
