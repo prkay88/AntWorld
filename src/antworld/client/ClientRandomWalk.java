@@ -6,11 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import antworld.common.*;
 
@@ -37,11 +34,6 @@ public class ClientRandomWalk
 
   private int antsMovingEast = 0;
 
-  private ExecutorService executor =  Executors.newFixedThreadPool(8);
-  ArrayList<ArrayList<AntData>> antDataLists = new ArrayList<>();
-  ArrayList<WorkerThread> threadList = new ArrayList<>();
-
-
   //A random number generator is created in Constants. Use it.
   //Do not create a new generator every time you want a random number nor
   //  even in every class were you want a generator.
@@ -63,8 +55,6 @@ public class ClientRandomWalk
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
     createMap();
-    initializeAntDataLists();
-    initializeThreadList();
     mainGameLoop(data);
     closeAll();
   }
@@ -76,24 +66,6 @@ public class ClientRandomWalk
   public int getCenterY()
   {
     return this.centerY;
-  }
-
-  private void initializeThreadList()
-  {
-    for(int i=0; i<4; i++)
-    {
-      WorkerThread workerThread = new WorkerThread(null, null);
-      threadList.add(workerThread);
-    }
-  }
-
-  private void initializeAntDataLists()
-  {
-    for(int i=0; i< 8; i++)
-    {
-      ArrayList<AntData> antDataList = new ArrayList<>();
-      antDataLists.add(i, antDataList);
-    }
   }
 
   private boolean openConnection(String host, int portNumber)
@@ -158,7 +130,7 @@ public class ClientRandomWalk
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
       //TODO: Uncomment for proper behavior
 //      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
-      NestNameEnum requestedNest = NestNameEnum.ARMY;
+      NestNameEnum requestedNest = NestNameEnum.HARVESTER;
       CommData data = new CommData(requestedNest, myTeam);
       data.password = password;
 
@@ -200,7 +172,7 @@ public class ClientRandomWalk
 
   private void createMap()
   {
-    BufferedImage map = Util.loadImage("SmallMap1.png", null);
+    BufferedImage map = Util.loadImage("AStarTest1.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
   }
@@ -228,10 +200,13 @@ public class ClientRandomWalk
       {
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
-
+  
         chooseActionsOfAllAnts(data);
+        spawnNewAnt(data); //try to spawn ants when possible
+  
         CommData sendData = data.packageForSendToServer();
-
+        System.out.println("testAI.antStatusHashMap size="+testAI.antStatusHashMap.size());
+          
         System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
         outputStream.writeObject(sendData);
         outputStream.flush();
@@ -239,7 +214,6 @@ public class ClientRandomWalk
 
 
         if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
-        //TODO: Server gives us this:
         CommData receivedData = (CommData) inputStream.readObject();
         if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + receivedData);
         data = receivedData;
@@ -289,82 +263,18 @@ public class ClientRandomWalk
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
     testAI.setCommData(commData);
-    int count =0;
-    /*if(commData.foodSet != null && !commData.foodSet.isEmpty())
-    {
-      for(FoodData food : commData.foodSet)
-      {
-        if(count == 0)
-        {
-          AntData antData = commData.myAntList.get(0);
-          ClientCell start = world[antData.gridX][antData.gridY];
-          ClientCell goal = world[food.gridX][food.gridY];
-          System.out.println("FINDING A PATH FROM X: " + antData.gridX + " Y: " + antData.gridY + " TO X: " + food.gridX+ " Y: "+food.gridY);
-          AStar test = new AStar(start, goal);
-          LinkedList<ClientCell> path = test.findPath();
-        }
-        count++;
-      }
-    }*/
-    //setting food locations on the map.
+    //TODO: setting food locations on the map.
     for(FoodData food : commData.foodSet)
     {
       world[food.gridX][food.gridY].setFoodType(food.foodType);
-      //System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
+      System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
     }
-
-    ArrayList<ArrayList<AntData>> antDataForThreads = chooseAntThreads(commData, 4);
-    if(antDataForThreads.isEmpty() || antDataForThreads == null) System.out.println("Something wrong in chooseAntTHreads");
-    else
-    {
-      int counter =0;
-      for(int i=0; i<4; i++)
-      {
-        WorkerThread workerThread = threadList.get(i);
-        workerThread.setIntelligence(testAI);
-        workerThread.setAntDataList(antDataForThreads.get(i));
-        workerThread.setCommData(commData);
-        executor.execute(workerThread);
-        //System.out.println("Spawning thread number " + counter);
-        counter++;
-      }
-    }
-
-    /*for (AntData ant : commData.myAntList)
+    for (AntData ant : commData.myAntList)
     {
       testAI.setAntData(ant);
-      ant.myAction = testAI.chooseAction(); //something weird here
-    }*/
-
-  }
-
-  private ArrayList<ArrayList<AntData>> chooseAntThreads(CommData commData, int numThreads)
-  {
-    ArrayList<ArrayList<AntData>> antDataLists = new ArrayList<>();
-    if(commData.myAntList.size() < numThreads)
-    {
-      System.out.println("Not enough ants for the thread");
-    }
-    else
-    {
-      int antsPerThread = commData.myAntList.size()/numThreads;
-      int antIndex=0;
-      for(int i=0; i<numThreads; i++)
-      {
-        int count = 0;
-        ArrayList<AntData> antDataList = new ArrayList<>();
-        while(count <=antsPerThread && antIndex <commData.myAntList.size())
-        {
-          antDataList.add(commData.myAntList.get(antIndex));
-          antIndex++;
-          count++;
-        }
-        System.out.println("I've assigned " + i + " threads");
-        antDataLists.add(i,antDataList);
-      }
+      ant.myAction = testAI.chooseAction();
     }
 
-    return antDataLists;
   }
   
   public void readMap(BufferedImage map)
@@ -389,6 +299,11 @@ public class ClientRandomWalk
         {
           landType = LandType.WATER;
         }
+        else if (rgb == 0x000000)
+        {
+          //treat black dots as grass
+          landType = LandType.GRASS;
+        }
         else
         {
           int g = (rgb & 0x0000FF00) >> 8;
@@ -401,10 +316,27 @@ public class ClientRandomWalk
       }
     }
   }
-
-
-
-
+  
+  //TODO: Start working here, give birth to a new ant
+  public void spawnNewAnt(CommData commData)
+  {
+    AntType[] antTypes = {AntType.ATTACK, AntType.DEFENCE, AntType.MEDIC,
+            AntType.SPEED, AntType.VISION, AntType.WORKER};
+    for (AntType antType : antTypes)
+    {
+//      System.out.println("getFoodUnitsToSpawn() called on " + antType + "=" + (antType.getFoodUnitsToSpawn(FoodType.MEAT)));
+      //if required food type is achieved for every ant type, respawn it
+      if (commData.foodStockPile[FoodType.MEAT.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.MEAT) >= 0 &&
+              commData.foodStockPile[FoodType.NECTAR.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.NECTAR) >= 0 &&
+              commData.foodStockPile[FoodType.SEEDS.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.SEEDS) >= 0)
+      {
+//        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
+//        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
+        commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
+        System.out.println("Spawned a new ant, new antList size="+commData.myAntList.size());
+      }
+    }
+  }
   
   public static void main(String[] args)
   {
