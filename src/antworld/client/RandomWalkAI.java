@@ -24,7 +24,7 @@ public class RandomWalkAI extends AI
     //Problem: Need to not tell the ants to move to a cell with food in it!
 //        AntAction antAction = new AntAction(AntAction.AntActionType.MOVE);
     //ask commData if there is an ant at the position i'm looking to go to.
-    System.out.println("In RWAI choosDirection()");
+    //System.out.println("In RWAI choosDirection()");
     if (startX > goalX && startY > goalY && !positionTaken(startX - 1, startY - 1))
     {
       antAction.direction = Direction.NORTHWEST;
@@ -59,7 +59,7 @@ public class RandomWalkAI extends AI
     }
     else
     {
-      System.out.println("FINDING ALTERNATIVE PATH.");
+      //System.out.println("FINDING ALTERNATIVE PATH.");
       //problem is breaking ties with two paths that have the same manhattan distance
       antAction.direction = Direction.getRandomDir();
     }
@@ -70,7 +70,7 @@ public class RandomWalkAI extends AI
   public boolean goExplore()
   {
     Direction dir = Direction.getRandomDir();
-    System.out.println("Inside RWAI goExplore");
+    //System.out.println("Inside RWAI goExplore");
 //        Direction dir = Direction.EAST; //go east
 //        Direction dir = Direction.NORTH; //go north
     antAction.type = AntAction.AntActionType.MOVE;
@@ -81,7 +81,7 @@ public class RandomWalkAI extends AI
   @Override
   public boolean exitNest()
   {
-    System.out.println("Inside RWAI exitNest");
+    //System.out.println("Inside RWAI exitNest");
     if (antData.underground)
     {
       antAction.type = AntAction.AntActionType.EXIT_NEST;
@@ -422,13 +422,15 @@ public class RandomWalkAI extends AI
   @Override
   public AntAction chooseAction()
   {
-    antAction = new AntAction(AntAction.AntActionType.STASIS);
+    antAction = new AntAction(AntAction.AntActionType.MOVE);
+    antAction.direction = Direction.getRandomDir();
     if (antData.ticksUntilNextAction > 0) return this.antAction;
-    
+
     if (exitNest()) return this.antAction; //always exit nest first
+
   
     if (attackAdjacent()) return this.antAction;
-    
+
     if (goToEnemyAnt()) return this.antAction; //always attack when sees an ant
     
     if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood() or goToWater()

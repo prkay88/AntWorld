@@ -1,9 +1,6 @@
 package antworld.client;
 
-import antworld.common.AntAction;
-import antworld.common.AntData;
-import antworld.common.CommData;
-import antworld.common.LandType;
+import antworld.common.*;
 
 import java.util.Random;
 
@@ -138,29 +135,30 @@ public class AI
   
   public AntAction chooseAction()
   {
-    antAction = new AntAction(AntAction.AntActionType.STASIS);
+    antAction = new AntAction(AntAction.AntActionType.MOVE);
+    antAction.direction = Direction.getRandomDir();
 //        AntAction action = new AntAction(AntAction.AntActionType.STASIS);
     
-    if (antData.ticksUntilNextAction > 0) return this.antAction;
-    
+    //if (antData.ticksUntilNextAction > 0) return this.antAction;
+    System.out.println("Trying exitNest");
     if (exitNest()) return this.antAction; //always exit nest first
-    
+    System.out.println("Trying goHomeIfCarryOrHurt");
     if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood()
-    
+    System.out.println("Trying pickUpFoodAdjacent");
     if (pickUpFoodAdjacent()) return this.antAction;
-    
+    System.out.println("Trying goToFood");
     if (goToFood()) return this.antAction;
-    
+    System.out.println("Trying goExplore");
     if (goExplore()) return this.antAction;
-    
+    System.out.println("Trying attackAdjacent");
     if (attackAdjacent()) return this.antAction;
-    
+    System.out.println("Trying pickUpWater");
     if (pickUpWater()) return this.antAction;
-    
+    System.out.println("Trying goToEnemyAnt");
     if (goToEnemyAnt()) return this.antAction;
-    
+    System.out.println("Trying goToGoodAnt");
     if (goToGoodAnt()) return this.antAction;
-    
+    System.out.println("End of Method");
     return this.antAction;
   }
   

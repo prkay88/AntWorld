@@ -6,8 +6,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import antworld.common.*;
 
@@ -34,6 +37,11 @@ public class ClientRandomWalk
 
   private int antsMovingEast = 0;
 
+  private ExecutorService executor =  Executors.newFixedThreadPool(8);
+  ArrayList<ArrayList<AntData>> antDataLists = new ArrayList<>();
+  ArrayList<WorkerThread> threadList = new ArrayList<>();
+
+
   //A random number generator is created in Constants. Use it.
   //Do not create a new generator every time you want a random number nor
   //  even in every class were you want a generator.
@@ -55,6 +63,8 @@ public class ClientRandomWalk
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
     createMap();
+    initializeAntDataLists();
+    initializeThreadList();
     mainGameLoop(data);
     closeAll();
   }
@@ -66,6 +76,24 @@ public class ClientRandomWalk
   public int getCenterY()
   {
     return this.centerY;
+  }
+
+  private void initializeThreadList()
+  {
+    for(int i=0; i<4; i++)
+    {
+      WorkerThread workerThread = new WorkerThread(null, null);
+      threadList.add(workerThread);
+    }
+  }
+
+  private void initializeAntDataLists()
+  {
+    for(int i=0; i< 8; i++)
+    {
+      ArrayList<AntData> antDataList = new ArrayList<>();
+      antDataLists.add(i, antDataList);
+    }
   }
 
   private boolean openConnection(String host, int portNumber)
@@ -262,7 +290,7 @@ public class ClientRandomWalk
     //sets the actions effectively editing the CommData before being sent to the server for each ants
     testAI.setCommData(commData);
     int count =0;
-    if(commData.foodSet != null && !commData.foodSet.isEmpty())
+    /*if(commData.foodSet != null && !commData.foodSet.isEmpty())
     {
       for(FoodData food : commData.foodSet)
       {
@@ -277,19 +305,66 @@ public class ClientRandomWalk
         }
         count++;
       }
-    }
+    }*/
     //setting food locations on the map.
     for(FoodData food : commData.foodSet)
     {
       world[food.gridX][food.gridY].setFoodType(food.foodType);
-      System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
+      //System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
     }
-    for (AntData ant : commData.myAntList)
+
+    ArrayList<ArrayList<AntData>> antDataForThreads = chooseAntThreads(commData, 4);
+    if(antDataForThreads.isEmpty() || antDataForThreads == null) System.out.println("Something wrong in chooseAntTHreads");
+    else
+    {
+      int counter =0;
+      for(int i=0; i<4; i++)
+      {
+        WorkerThread workerThread = threadList.get(i);
+        workerThread.setIntelligence(testAI);
+        workerThread.setAntDataList(antDataForThreads.get(i));
+        workerThread.setCommData(commData);
+        executor.execute(workerThread);
+        //System.out.println("Spawning thread number " + counter);
+        counter++;
+      }
+    }
+
+    /*for (AntData ant : commData.myAntList)
     {
       testAI.setAntData(ant);
       ant.myAction = testAI.chooseAction(); //something weird here
+    }*/
+
+  }
+
+  private ArrayList<ArrayList<AntData>> chooseAntThreads(CommData commData, int numThreads)
+  {
+    ArrayList<ArrayList<AntData>> antDataLists = new ArrayList<>();
+    if(commData.myAntList.size() < numThreads)
+    {
+      System.out.println("Not enough ants for the thread");
+    }
+    else
+    {
+      int antsPerThread = commData.myAntList.size()/numThreads;
+      int antIndex=0;
+      for(int i=0; i<numThreads; i++)
+      {
+        int count = 0;
+        ArrayList<AntData> antDataList = new ArrayList<>();
+        while(count <=antsPerThread && antIndex <commData.myAntList.size())
+        {
+          antDataList.add(commData.myAntList.get(antIndex));
+          antIndex++;
+          count++;
+        }
+        System.out.println("I've assigned " + i + " threads");
+        antDataLists.add(i,antDataList);
+      }
     }
 
+    return antDataLists;
   }
   
   public void readMap(BufferedImage map)
