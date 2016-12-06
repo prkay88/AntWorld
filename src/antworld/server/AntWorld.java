@@ -558,10 +558,10 @@ public class AntWorld implements ActionListener
         {
 //          spawnX = 200;
 //          spawnY = 167;
-//          spawnX = 168;
-//          spawnY = 196;
-          spawnX = 48;
-          spawnY = 49;
+          spawnX = 175;
+          spawnY = 196;
+//          spawnX = 48;
+//          spawnY = 49;
 //          spawnX = 183;
 //          spawnY = 180;
 //          spawnX =  81;

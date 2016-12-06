@@ -133,13 +133,12 @@ public class RandomWalkAI extends AI
   @Override
   public boolean underGroundAction()
   {
-    System.out.println("Ant "+antData.id+ " Inside RWAI underGroundAction");
+    System.out.println("Inside RWAI underGroundAction");
     if (antData.id != Constants.UNKNOWN_ANT_ID && antData.underground)
     {
       if (antData.health >= healthThreshold)
       {
         antAction.type = AntAction.AntActionType.EXIT_NEST;
-        System.out.println("Inside of underGroundAction and setting Action to EXIT_NEST");
         //when food is EAST of the nest
 //      antAction.x = centerX;
 //      antAction.y = centerY - Constants.NEST_RADIUS;
@@ -162,17 +161,37 @@ public class RandomWalkAI extends AI
   @Override
   public boolean pickUpFoodAdjacent()
   {
-    if (commData.foodSet.size() == 0) return false;
+    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
+//    if (commData.foodSet.size() == 0) return false;
+    if (extraAntData.targetfoodCell == null) return false;
+    
+//    boolean foodStillThere = false;
+//    for (FoodData food : commData.foodSet)
+//    {
+//      if (food.gridX == extraAntData.targetfoodCell.x && food.gridY == extraAntData.targetfoodCell.y)
+//      {
+//        foodStillThere = true;
+//      }
+//    }
+//    //if the food is not there anymore, set the ant's action to roaming
+//    if (!foodStillThere)
+//    {
+//      antStatusHashMap.get(antData.id).action = ExtraAntData.CurrentAction.ROAMING;
+//      antStatusHashMap.get(antData.id).path.clear();
+//      antStatusHashMap.get(antData.id).nextCellIndex = 0;
+//      antStatusHashMap.get(antData.id).targetfoodCell = null;
+//    }
+    
     int antX = antData.gridX;
     int antY = antData.gridY;
     
-    FoodData food = null;
-    for (FoodData f : commData.foodSet)
-    {
-      food = f;
-    }
-    int foodX = food.gridX;
-    int foodY = food.gridY;
+//    FoodData food = null;
+//    for (FoodData f : commData.foodSet)
+//    {
+//      food = f;
+//    }
+    int foodX = extraAntData.targetfoodCell.x;
+    int foodY = extraAntData.targetfoodCell.y;
     
     antAction.type = AntAction.AntActionType.PICKUP;
     antAction.quantity = antData.antType.getCarryCapacity(); //TODO: better so far, uncomment for proper behavior
@@ -211,6 +230,7 @@ public class RandomWalkAI extends AI
     }
     else
     {
+      //For when the Ant's target food is gone, it roams again
       //return false when there is no adjacent food
       return false;
     }
@@ -573,14 +593,34 @@ public class RandomWalkAI extends AI
       //if null StatusType in ExtraAntData, ants has normal StatusType
       antStatusHashMap.put(antData.id, new ExtraAntData(Direction.getRandomDir()));
     }
-    
+  
+    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     //priority is to spawn ants
 //    if (spawnNewAnt()) return antAction;
+    if (extraAntData.targetfoodCell != null)
+    {
+      boolean foodStillThere = false;
+      for (FoodData food : commData.foodSet)
+      {
+        if (food.gridX == extraAntData.targetfoodCell.x && food.gridY == extraAntData.targetfoodCell.y)
+        {
+          foodStillThere = true;
+        }
+      }
+      //if the food is not there anymore, set the ant's action to roaming
+      if (!foodStillThere)
+      {
+        antStatusHashMap.get(antData.id).action = ExtraAntData.CurrentAction.ROAMING;
+        antStatusHashMap.get(antData.id).path.clear();
+        antStatusHashMap.get(antData.id).nextCellIndex = 0;
+        antStatusHashMap.get(antData.id).targetfoodCell = null;
+      }
+    }
     
     antAction = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
     
-    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
+//    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     System.out.println("Ant's action is currently:" + extraAntData.action);
     if (extraAntData.action == ExtraAntData.CurrentAction.FOLLOWING_FOOD)
     {

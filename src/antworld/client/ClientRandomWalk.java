@@ -6,13 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import antworld.common.*;
 
@@ -44,10 +39,6 @@ public class ClientRandomWalk
   //  even in every class were you want a generator.
   private static Random random = Constants.random;
 
-  private int numThreads = 8;
-  private ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-  private ArrayList<ArrayList<AntData>> antDataListsForThreads = new ArrayList<>();
-  private ArrayList<WorkerThread> workerThreads = new ArrayList<>();
 
   public ClientRandomWalk(String host, int portNumber)
   {
@@ -64,9 +55,6 @@ public class ClientRandomWalk
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
     createMap();
-    initializeAntDataLists();
-    assignAntsToWorkerThreads(data);
-    initiailizeWorkerThreadList();
     mainGameLoop(data);
     closeAll();
   }
@@ -79,44 +67,6 @@ public class ClientRandomWalk
   {
     return this.centerY;
   }
-
-  private void initializeAntDataLists()
-  {
-    for(int i=0; i<numThreads; i++)
-    {
-      ArrayList<AntData> antDataList = new ArrayList<>();
-      antDataListsForThreads.add(i, antDataList);
-    }
-  }
-
-  private void assignAntsToWorkerThreads(CommData commData)
-  {
-    int count = 0;
-    int index =0;
-    int step = commData.myAntList.size()/4;
-
-    for( AntData antData : commData.myAntList)
-    {
-      if(count == step)
-      {
-        index++;
-        count = 0;
-      }
-      antDataListsForThreads.get(index).add(antData);
-      count++;
-    }
-
-  }
-
-  private void initiailizeWorkerThreadList()
-  {
-    for(int i=0; i<numThreads; i++)
-    {
-      WorkerThread workerThread = new WorkerThread(null, null);
-      workerThreads.add(workerThread);
-    }
-  }
-
 
   private boolean openConnection(String host, int portNumber)
   {
@@ -252,7 +202,7 @@ public class ClientRandomWalk
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
   
         chooseActionsOfAllAnts(data);
-        spawnNewAnt(data); //try to spawn ants when possible
+//        spawnNewAnt(data); //try to spawn ants when possible
   
         CommData sendData = data.packageForSendToServer();
         System.out.println("testAI.antStatusHashMap size="+testAI.antStatusHashMap.size());
@@ -319,29 +269,11 @@ public class ClientRandomWalk
       world[food.gridX][food.gridY].setFoodType(food.foodType);
       System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
     }
-    assignAntsToWorkerThreads(commData);
-    for(int i=0; i<1; i++)
-    {
-      if(!antDataListsForThreads.get(i).isEmpty())
-      {
-
-        WorkerThread workerThread = workerThreads.get(i);
-        workerThread.setAntDataList(antDataListsForThreads.get(i));
-        workerThread.setIntelligence(testAI);
-        workerThread.setCommData(commData);
-        executor.execute(workerThread);
-      }
-
-    }
-    //WorkerThread wk = new WorkerThread(commData.myAntList, commData);
-    //wk.setIntelligence(testAI);
-    //wk.start();
-
-    /*for (AntData ant : commData.myAntList)
+    for (AntData ant : commData.myAntList)
     {
       testAI.setAntData(ant);
       ant.myAction = testAI.chooseAction();
-    }*/
+    }
 
   }
   
@@ -401,7 +333,6 @@ public class ClientRandomWalk
 //        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
 //        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
         commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
-        //add ant to a worker thread so it is able to preform action
         System.out.println("Spawned a new ant, new antList size="+commData.myAntList.size());
       }
     }
