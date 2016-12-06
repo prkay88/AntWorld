@@ -24,6 +24,8 @@ public class Swarm extends Thread
   private HashSet<Integer> antIdSet = new HashSet<>();
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
+
+
     public Swarm(int centerX, int centerY, double innerRadius, ArrayList<AntData> antDataList, AI intellegence, CommData commData)
   {
       this.centerX = centerX;
