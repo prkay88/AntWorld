@@ -41,7 +41,7 @@ public class FoodSpawnSite implements Serializable
   public void nestGatheredFood(NestNameEnum nestName, int foodUnitCount)
   {
     if (foodUnitCount <=0)activeFoodPileCount--;
-    if (foodUnitCount < 5) needSpawn = true;
+//    if (foodUnitCount < 5) needSpawn = true; //TODO: uncomment for proper behavior
     if (nestName != null)
     {
       didNestGatherFromThisSiteRecently[nestName.ordinal()] = true;
@@ -92,7 +92,8 @@ public class FoodSpawnSite implements Serializable
       if (myCell.getLandType() != LandType.GRASS) continue;
       if (!myCell.isEmpty())  continue;
 
-      FoodData foodPile = new FoodData(foodType, x, y, count);
+//      FoodData foodPile = new FoodData(foodType, x, y, count); //TODO: uncomment for proper behavior
+      FoodData foodPile = new FoodData(foodType, x, y, 50); //TODO: delete for proper behavior
       world.addFood(this, foodPile);
       spawnCount++;
       activeFoodPileCount++;
