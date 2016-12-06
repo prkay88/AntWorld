@@ -325,6 +325,7 @@ public class ClientRandomWalk
       if(!antDataListsForThreads.get(i).isEmpty())
       {
 
+
         WorkerThread workerThread = workerThreads.get(i);
         workerThread.setAntDataList(antDataListsForThreads.get(i));
         workerThread.setIntelligence(testAI);
