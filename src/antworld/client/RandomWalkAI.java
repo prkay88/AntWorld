@@ -133,12 +133,13 @@ public class RandomWalkAI extends AI
   @Override
   public boolean underGroundAction()
   {
-    System.out.println("Inside RWAI underGroundAction");
+    System.out.println("Ant "+antData.id+ " Inside RWAI underGroundAction");
     if (antData.id != Constants.UNKNOWN_ANT_ID && antData.underground)
     {
       if (antData.health >= healthThreshold)
       {
         antAction.type = AntAction.AntActionType.EXIT_NEST;
+        System.out.println("Inside of underGroundAction and setting Action to EXIT_NEST");
         //when food is EAST of the nest
 //      antAction.x = centerX;
 //      antAction.y = centerY - Constants.NEST_RADIUS;

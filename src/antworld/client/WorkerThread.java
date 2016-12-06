@@ -1,5 +1,6 @@
 package antworld.client;
 
+import antworld.common.AntAction;
 import antworld.common.AntData;
 import antworld.common.CommData;
 
@@ -43,19 +44,15 @@ public class WorkerThread extends Thread
     @Override
     public void run()
     {
+        intelligence.setCommData(commData);
 
-        //execute decisions here
-        for(AntData antData : antDataList)
-        {
-            System.out.println(Thread.currentThread().getName()+" AntID  = "+antData.id);
-        }
-        for(AntData antData : antDataList)
+        for(AntData antData : commData.myAntList)
         {
 
-
-            intelligence.setCommData(commData);
             intelligence.setAntData(antData);
            antData.myAction = intelligence.chooseAction();
+
+           //System.out.println("Ant ID: " +antData.id + " chose " + antData.myAction);
 
         }
     }
