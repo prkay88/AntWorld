@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import antworld.common.*;
+import javafx.concurrent.Worker;
 
 public class ClientRandomWalk
 {
@@ -112,7 +113,8 @@ public class ClientRandomWalk
   {
     for(int i=0; i<numThreads; i++)
     {
-      WorkerThread workerThread = new WorkerThread(null, null);
+      //WorkerThread workerThread = new WorkerThread(null, null);
+      WorkerThread workerThread = new WorkerThread(testAI);
       workerThreads.add(workerThread);
     }
   }
@@ -327,8 +329,8 @@ public class ClientRandomWalk
 
 
         WorkerThread workerThread = workerThreads.get(i);
-        workerThread.setAntDataList(antDataListsForThreads.get(i));
-        workerThread.setIntelligence(testAI);
+        //workerThread.setAntDataList(antDataListsForThreads.get(i));
+        //workerThread.setIntelligence(testAI);
         workerThread.setCommData(commData);
         executor.execute(workerThread);
       }
