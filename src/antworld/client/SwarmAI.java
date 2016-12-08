@@ -12,12 +12,13 @@ public class SwarmAI extends AI
 {
     private int aggroRadius = 10;
     private int healthThreshold = 15;
+
     private final int SWARMID;
     AStar aStarObject; //initialized to null beginning and end
     LinkedList<ClientCell> AStarPath = null; //look at how AI is given to the ants
     ConcurrentHashMap<Integer, ExtraAntData> antStatusHashMap = new ConcurrentHashMap<>(); //contains all the ant IDs and their ExtraAntData
     ConcurrentHashMap<ClientCell, FoodStatus> foodBank = new ConcurrentHashMap<>();
-
+    Swarm mySwarm;
 
     public SwarmAI(int swarmID, CommData data, AntData antData)
     {
@@ -27,6 +28,13 @@ public class SwarmAI extends AI
         this.SWARMID = swarmID;
         aStarObject = new AStar(null,null);
     }
+
+    public void setMySwarm(Swarm swarm)
+    {
+        mySwarm = swarm;
+    }
+
+
 
     private AntAction chooseDirection(int startX, int startY, int goalX, int goalY)
     {
@@ -94,6 +102,13 @@ public class SwarmAI extends AI
         {
             extraAntData.updateRoamingDirection();
         }
+        //checking to see if an is inside swarm. if not choosing random direction until they are.
+        if(!mySwarm.insideOuterRadius(antData.gridX+antAction.direction.deltaX(), antData.gridY+antAction.direction.deltaY()))
+        {
+            antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY() );
+            antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
+        }
+
         if (extraAntData.ticksTillUpdate > 0)
         {
             extraAntData.ticksTillUpdate--;

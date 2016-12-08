@@ -98,7 +98,8 @@ public class ClientRandomWalk
     for(int i=0; i<4; i++)
     {
       SwarmAI swarmAI = new SwarmAI(i,commData, null);
-      Swarm swarm = new Swarm(i, 0, 0, 50, swarmAI, commData);
+      Swarm swarm = new Swarm(i, centerX, centerY, 50, swarmAI, commData);
+      swarmAI.setMySwarm(swarm);
       swarmList.add(i,swarm);
     }
   }
