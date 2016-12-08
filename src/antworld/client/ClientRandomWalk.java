@@ -25,11 +25,11 @@ public class ClientRandomWalk
   private ObjectInputStream inputStream = null;
   private ObjectOutputStream outputStream = null;
   private boolean isConnected = false;
-  private NestNameEnum myNestName = null;
+  public NestNameEnum myNestName = null;
 //  private NestNameEnum myNestName = NestNameEnum.ARMY;
   private int centerX, centerY;
   public static int mapWidth, mapHeight;
-
+  public int scoreToAntRatio = 100;
   
   //cell class in client, not sure if we can use the one in server package
   static ClientCell[][] world; //contains all the land types of the map being used
@@ -62,7 +62,7 @@ public class ClientRandomWalk
     }
 
     CommData data = chooseNest();
-    testAI = new RandomWalkAI(data, null);
+    testAI = new RandomWalkAI(data, null, myNestName);
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
     createMap();
@@ -278,6 +278,7 @@ public class ClientRandomWalk
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
   
+        
         chooseActionsOfAllAnts(data);
         spawnNewAnt(data); //try to spawn ants when possible
   
@@ -413,26 +414,41 @@ public class ClientRandomWalk
     }
   }
   
-  //TODO: Start working here, give birth to a new ant
+  
+  //Put in RandomWalkAI?
   public void spawnNewAnt(CommData commData)
   {
+    int myScore = 0;
+    int antCount = commData.myAntList.size()*10;
+    System.out.println("antCount="+antCount);
+    for (int foodCount: commData.foodStockPile)
+    {
+      myScore += foodCount;
+    }
     AntType[] antTypes = {AntType.ATTACK, AntType.DEFENCE, AntType.MEDIC,
             AntType.SPEED, AntType.VISION, AntType.WORKER};
-    for (AntType antType : antTypes)
+    
+    if (myScore >= antCount*scoreToAntRatio)
     {
-//      System.out.println("getFoodUnitsToSpawn() called on " + antType + "=" + (antType.getFoodUnitsToSpawn(FoodType.MEAT)));
-      //if required food type is achieved for every ant type, respawn it
-      if (commData.foodStockPile[FoodType.MEAT.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.MEAT) >= 0 &&
-              commData.foodStockPile[FoodType.NECTAR.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.NECTAR) >= 0 &&
-              commData.foodStockPile[FoodType.SEEDS.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.SEEDS) >= 0)
+      for (AntType antType : antTypes)
       {
+//      System.out.println("getFoodUnitsToSpawn() called on " + antType + "=" + (antType.getFoodUnitsToSpawn(FoodType.MEAT)));
+        //if required food type is achieved for every ant type, respawn it
+        if (commData.foodStockPile[FoodType.MEAT.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.MEAT) >= 0 &&
+                commData.foodStockPile[FoodType.NECTAR.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.NECTAR) >= 0 &&
+                commData.foodStockPile[FoodType.SEEDS.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.SEEDS) >= 0)
+        {
 //        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
 //        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
         commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
-        //add ant to a worker thread so it is able to preform action
         System.out.println("Spawned a new ant, new antList size="+commData.myAntList.size());
       }
     }
+  }
+  
+  public NestNameEnum getmyNestName()
+  {
+    return myNestName;
   }
   
   public static void main(String[] args)
