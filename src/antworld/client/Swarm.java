@@ -18,7 +18,7 @@ public class Swarm extends Thread
   private double middleRadius;
   private double outerRadius;
   private final int SWARMID;
-
+  private boolean computeNextMove = false;
   private ArrayList<AntData> antDataList = new ArrayList<>();
   private AI intellegence;
   private CommData commData;
@@ -157,19 +157,36 @@ public class Swarm extends Thread
       }
   }
 
+  public void executeNextUpdate(CommData commData)
+  {
+      this.computeNextMove = true;
+      this.commData = commData;
+  }
+
 //Still need to figure out how to get multi thread working
     @Override
   public void run()
   {
-     intellegence.setCommData(this.commData);
-     for(AntData antData : commData.myAntList)
-     {
-         if(antIdSet.contains(antData.id))
-         {
-             intellegence.setAntData(antData);
-             antData.myAction = intellegence.chooseAction();
-         }
+     System.out.println("Starting Swarm Number: "+ SWARMID);
 
-     }
+
+         //System.out.println("Swarm Number: "+ SWARMID+ " computeNextUpdate is: "+computeNextMove);
+
+             //System.out.println("Swarm Number: "+ SWARMID+ " is executing next update");
+             intellegence.setCommData(this.commData);
+             for(AntData antData : commData.myAntList)
+             {
+                 if(antIdSet.contains(antData.id))
+                 {
+                     intellegence.setAntData(antData);
+                     antData.myAction = intellegence.chooseAction();
+                 }
+
+             }
+
+
+
+
+
   }
 }

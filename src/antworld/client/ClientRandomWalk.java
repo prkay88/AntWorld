@@ -269,7 +269,7 @@ public class ClientRandomWalk
 //      System.out.println();
 //    }
 //    System.exit(0);
-    
+    startAllSwarms();
     while (true)
     {
       testAI.setCommData(data);
@@ -350,7 +350,9 @@ public class ClientRandomWalk
     for(Swarm swarm : swarmList)
     {
       swarm.setCommData(commData);
-      swarm.chooseActionForSwarm(commData);
+      executor.execute(swarm);
+
+      //swarm.chooseActionForSwarm(commData);
     }
     //WorkerThread wk = new WorkerThread(commData.myAntList, commData);
     //wk.setIntelligence(testAI);
@@ -362,6 +364,14 @@ public class ClientRandomWalk
       ant.myAction = testAI.chooseAction();
     }*/
 
+  }
+
+  private void startAllSwarms()
+  {
+    for(Swarm swarm : swarmList)
+    {
+      swarm.start();
+    }
   }
   
   public void readMap(BufferedImage map)

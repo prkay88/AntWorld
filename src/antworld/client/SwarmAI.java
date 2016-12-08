@@ -205,7 +205,7 @@ public class SwarmAI extends AI
             //return false when there is no adjacent food
             return false;
         }
-//    System.out.println("Picking up food.");
+   System.out.println("Picking up food.");
         return true;
     }
 
@@ -544,7 +544,7 @@ public class SwarmAI extends AI
         if (antData.ticksUntilNextAction > 0) return this.antAction;
 
 //    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
-        System.out.println("Ant's action is currently:" + extraAntData.action);
+        //System.out.println("Ant's action is currently:" + extraAntData.action);
         if (extraAntData.action == ExtraAntData.CurrentAction.FOLLOWING_FOOD)
         {
             if (extraAntData.nextCellIndex < extraAntData.path.size())
