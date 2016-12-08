@@ -18,7 +18,8 @@ public class RandomWalkAI extends AI
   LinkedList<ClientCell> AStarPath = null; //look at how AI is given to the ants
   ConcurrentHashMap<Integer, ExtraAntData> antStatusHashMap = new ConcurrentHashMap<>(); //contains all the ant IDs and their ExtraAntData
   ConcurrentHashMap<ClientCell, FoodStatus> foodBank = new ConcurrentHashMap<>();
-//  ArrayList<FoodStatus> foodBank = new ArrayList<>();
+  NestNameEnum myNestName;
+/// /  ArrayList<FoodStatus> foodBank = new ArrayList<>();
 //private static final int DIR_BIT_N  = 1;
 //  private static final int DIR_BIT_NE = 2;
 //  private static final int DIR_BIT_E  = 4;
@@ -34,9 +35,10 @@ public class RandomWalkAI extends AI
 //  private static final int DIR_BIT_ANY_W = DIR_BIT_W | DIR_BIT_NW | DIR_BIT_SW;
 //  private static final int MAX_EXPLORE_DIST = 300;
   
-  public RandomWalkAI(CommData data, AntData antData)
+  public RandomWalkAI(CommData data, AntData antData, NestNameEnum myNestName)
   {
     super(data, antData);
+    this.myNestName = myNestName;
 //    this.commData = data;
     centerX = commData.nestData[commData.myNest.ordinal()].centerX;
     centerY = commData.nestData[commData.myNest.ordinal()].centerY;
@@ -51,49 +53,65 @@ public class RandomWalkAI extends AI
 //        AntAction antAction = new AntAction(AntAction.AntActionType.MOVE);
     //ask commData if there is an ant at the position i'm looking to go to.
     System.out.println("In RWAI choosDirection()");
-    if (startX > goalX && startY > goalY && !positionTaken(startX - 1, startY - 1))
+    int distance = 0;
+    if (startX > goalX && startY > goalY)
     {
       antAction.direction = Direction.NORTHWEST;
     }
-    else if (startX < goalX && startY > goalY && !positionTaken(startX + 1, startY - 1))
+    else if (startX < goalX && startY > goalY)
     {
       antAction.direction = Direction.NORTHEAST;
     }
-    else if (startX > goalX && startY < goalY && !positionTaken(startX - 1, startY + 1))
+    else if (startX > goalX && startY < goalY)
     {
       antAction.direction = Direction.SOUTHWEST;
     }
-    else if (startX < goalX && startY < goalY && !positionTaken(startX + 1, startY + 1))
+    else if (startX < goalX && startY < goalY)
     {
       antAction.direction = Direction.SOUTHEAST;
     }
-    else if (startX == goalX && startY > goalY && !positionTaken(startX, startY - 1))
+    else if (startX == goalX && startY > goalY)
     {
       antAction.direction = Direction.NORTH;
     }
-    else if (startX == goalX && startY < goalY && !positionTaken(startX, startY + 1))
+    else if (startX == goalX && startY < goalY)
     {
       antAction.direction = Direction.SOUTH;
     }
-    else if (startX < goalX && startY == goalY && !positionTaken(startX + 1, startY))
+    else if (startX < goalX && startY == goalY)
     {
       antAction.direction = Direction.EAST;
     }
-    else if (startX > goalX && startY == goalY && !positionTaken(startX - 1, startY))
+    else if (startX > goalX && startY == goalY)
     {
       antAction.direction = Direction.WEST;
     }
-    else
+    System.out.println("startX="+startX+", startY="+startY+", goalX="+goalX+", goalY="+goalY+"direction="+antAction.direction);
+    
+    Direction direction = antAction.direction;
+    //check for direction first
+    if (direction != null && positionTaken(startX+direction.deltaX(), startY+direction.deltaY()))
     {
-      //TODO: trying to see if stopping ants is better instead of forcing them to move.
-//      System.out.println("FINDING ALTERNATIVE PATH.");
-      //problem is breaking ties with two paths that have the same manhattan distance
-      
-      antAction.direction = Direction.getRandomDir();
-      ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
-//      antAction.type = AntAction.AntActionType.STASIS;
+      System.out.println("FINDING ALTERNATIVE PATH.");
+      distance = Util.manhattanDistance(startX + direction.deltaX(), startY + direction.deltaY(), goalX, goalY);
+      for (Direction dir : Direction.values())
+      {
+        if (Util.manhattanDistance(startX + dir.deltaX(), startY + dir.deltaY(), goalX, goalY) <= distance &&
+                !positionTaken(startX + dir.deltaX(), startY + dir.deltaY()))
+        {
+          antAction.direction = dir;
+          ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
+          if (extraAntData.action == ExtraAntData.CurrentAction.FOLLOWING_FOOD ||
+                  extraAntData.action == ExtraAntData.CurrentAction.GOING_HOME)
+          {
+            antStatusHashMap.get(antData.id).nextCellIndex++; //skip it.
+          }
+            
+          return antAction;
+        }
+      }
+      antAction.direction = Direction.getRandomDir(); //don't make it move.
     }
-//    updateMap(antAction.direction);
     return antAction;
   }
   
@@ -127,6 +145,8 @@ public class RandomWalkAI extends AI
     
 //    updateMap(antAction.direction);
 //    antAction.direction = Direction.SOUTH;
+    antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+    antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
     return true;
   }
   
@@ -142,10 +162,10 @@ public class RandomWalkAI extends AI
         //when food is EAST of the nest
 //      antAction.x = centerX;
 //      antAction.y = centerY - Constants.NEST_RADIUS;
-//      antAction.x = centerX - Constants.NEST_RADIUS;
-//      antAction.y = centerY;
-        antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
-        antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+      antAction.x = centerX - Constants.NEST_RADIUS;
+      antAction.y = centerY;
+//        antAction.x = centerX - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
+//        antAction.y = centerY - (Constants.NEST_RADIUS - 1) + random.nextInt(2 * (Constants.NEST_RADIUS - 1));
 //      ClientRandomWalk.world[antAction.x][antAction.y].height+=100000000; //ants occupy cells now
       }
       else if (antData.health < healthThreshold)
@@ -153,6 +173,8 @@ public class RandomWalkAI extends AI
         //this is how ants heal
         antAction.type = AntAction.AntActionType.HEAL;
       }
+      antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+      antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
       return true;
     }
     return false;
@@ -235,6 +257,8 @@ public class RandomWalkAI extends AI
       return false;
     }
 //    System.out.println("Picking up food.");
+    antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+    antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
     return true;
   }
   
@@ -251,6 +275,8 @@ public class RandomWalkAI extends AI
         antAction.type = AntAction.AntActionType.DROP;
         antAction.quantity = antData.carryUnits; //just drop all
       }
+      antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+      antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
       return true;
     }
     //must see no ants have health less than 18
@@ -261,6 +287,8 @@ public class RandomWalkAI extends AI
         antAction = chooseDirection(antData.gridX, antData.gridY, centerX, centerY); //drop when food is in NORTH
         antAction.type = AntAction.AntActionType.ENTER_NEST;
         ClientRandomWalk.world[antData.gridX][antData.gridY].height-=100000000; //because they will be gone
+        antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+        antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
       }
       return true;
     }
@@ -308,6 +336,8 @@ public class RandomWalkAI extends AI
           }
         }
         extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
+        antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+        antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
 //        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY); //uncomment for proper behavior
         return true;
         //put in foodBank when food is found, it should be there until its count drops to 0
@@ -422,9 +452,13 @@ public class RandomWalkAI extends AI
       if (goToX == 0 && goToY == 0 && closestWater == 1000000)
       {
         antAction.direction = Direction.getRandomDir();
+        antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+        antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
         return true;
       }
       antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
+      antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+      antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
       return true;
     }
     return false;
@@ -485,7 +519,8 @@ public class RandomWalkAI extends AI
       return false;
     }
     antAction.type = AntAction.AntActionType.PICKUP;
-    System.out.println("Ant with id="+antData.id+" found water and will pick it up.");
+    antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+    antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
     return true;
   }
   
@@ -545,6 +580,8 @@ public class RandomWalkAI extends AI
     {
       return false;
     }
+    antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+    antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
     return true;
   }
   
@@ -572,6 +609,8 @@ public class RandomWalkAI extends AI
         {
           antAction.type = AntAction.AntActionType.MOVE;
           antAction = chooseDirection(myAnt.gridX, myAnt.gridY, enemyAnt.gridX, enemyAnt.gridY);
+          antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+          antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
           return true;
         }
       }
@@ -583,6 +622,7 @@ public class RandomWalkAI extends AI
   public AntAction chooseAction()
   {
     //so that the newly spawned ants from client random walk will not have to ChooseAction
+//    spawnNewAnt();
     if (antData.id == Constants.UNKNOWN_ANT_ID)
     {
       return antAction;
@@ -630,6 +670,8 @@ public class RandomWalkAI extends AI
         int nextX = extraAntData.path.get(extraAntData.nextCellIndex).x;
         int nextY = extraAntData.path.get(extraAntData.nextCellIndex).y;
         antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
+        antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+        antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
         if (!positionTaken(nextX, nextY))
         {
           extraAntData.nextCellIndex++;
@@ -659,6 +701,8 @@ public class RandomWalkAI extends AI
         int nextY = extraAntData.path.get(nextCellIndex).y;
         antAction.type = AntAction.AntActionType.MOVE;
         antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
+        antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
+        antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
         if (!positionTaken(nextX, nextY))
         {
           extraAntData.nextCellIndex++;

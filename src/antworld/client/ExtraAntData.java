@@ -1,10 +1,13 @@
 package antworld.client;
 
+import antworld.common.AntAction;
 import antworld.common.Constants;
 import antworld.common.Direction;
+import antworld.common.AntAction.AntActionType;
 import com.sun.deploy.util.SessionState;
 
 import java.util.LinkedList;
+
 
 /**
  * Created by Arthur on 11/30/2016.
@@ -27,6 +30,8 @@ public class ExtraAntData
   int nextCellIndex; //initializes to 0
   ClientCell targetfoodCell;
   int ticksTillUpdate;
+  AntActionType typeFromPreviousTurn;
+  Direction directionFromPreviousTurn;
 //  FoodStatus targetFood;
 //  int indexInAssembly;
 
