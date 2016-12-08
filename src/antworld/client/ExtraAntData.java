@@ -45,6 +45,8 @@ public class ExtraAntData
     this.path = path;
   }
   
+
+
   public void updateRoamingDirection()
   {
     mainDirection = Direction.getRandomDir();
