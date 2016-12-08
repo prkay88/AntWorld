@@ -404,21 +404,20 @@ public class ClientRandomWalk
     }
   }
   
-  
-  //Put in RandomWalkAI?
+  //TODO: Start working here, give birth to a new ant
   public void spawnNewAnt(CommData commData)
   {
     int myScore = 0;
-    int antCount = commData.myAntList.size()*10;
-    System.out.println("antCount="+antCount);
-    for (int foodCount: commData.foodStockPile)
+    int antCount = commData.myAntList.size() * 10;
+    System.out.println("antCount=" + antCount);
+    for (int foodCount : commData.foodStockPile)
     {
       myScore += foodCount;
     }
     AntType[] antTypes = {AntType.ATTACK, AntType.DEFENCE, AntType.MEDIC,
             AntType.SPEED, AntType.VISION, AntType.WORKER};
-    
-    if (myScore >= antCount*scoreToAntRatio)
+  
+    if (myScore >= antCount * scoreToAntRatio)
     {
       for (AntType antType : antTypes)
       {
@@ -430,8 +429,9 @@ public class ClientRandomWalk
         {
 //        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
 //        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
-        commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
-        System.out.println("Spawned a new ant, new antList size="+commData.myAntList.size());
+          commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
+          System.out.println("Spawned a new ant, new antList size=" + commData.myAntList.size());
+        }
       }
     }
   }
