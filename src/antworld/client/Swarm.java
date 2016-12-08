@@ -17,6 +17,7 @@ public class Swarm extends Thread
   private double innerRadius;
   private double middleRadius;
   private double outerRadius;
+  private final int SWARMID;
 
   private ArrayList<AntData> antDataList = new ArrayList<>();
   private AI intellegence;
@@ -26,16 +27,24 @@ public class Swarm extends Thread
   //Also could have a worker thread here too.
 
 
-    public Swarm(int centerX, int centerY, double innerRadius, ArrayList<AntData> antDataList, AI intellegence, CommData commData)
+    public Swarm(int id, int centerX, int centerY, double innerRadius,  AI intellegence, CommData commData)
   {
+      this.SWARMID = id;
       this.centerX = centerX;
       this.centerY = centerY;
       this.innerRadius = innerRadius;
       this.middleRadius = this.innerRadius*3;
       this.outerRadius = this.innerRadius * 6;
-      this.antDataList = antDataList;
       this.intellegence = intellegence;
       this.commData = commData;
+  }
+
+  public void printAntIDs()
+  {
+      for(Integer integer : antIdSet)
+      {
+          System.out.println("Swarm ID is: " + SWARMID + " antId is: " + integer);
+      }
   }
 
   public void setCenterX(int centerX)
@@ -98,10 +107,7 @@ public class Swarm extends Thread
       this.commData = commData;
   }
 
-  public void addAnt(AntData antData)
-  {
-      antDataList.add(antData);
-  }
+
 
   public boolean insideInnerRadius(int x, int y)
   {
@@ -136,11 +142,26 @@ public class Swarm extends Thread
       antIdSet.add(antData.id);
   }
 
+  public void chooseActionForSwarm(CommData commData)
+  {
+      this.commData = commData;
+      intellegence.setCommData(this.commData);
+      for(AntData antData : commData.myAntList)
+      {
+          if(antIdSet.contains(antData.id))
+          {
+              intellegence.setAntData(antData);
+              antData.myAction = intellegence.chooseAction();
+          }
 
+      }
+  }
+
+//Still need to figure out how to get multi thread working
     @Override
   public void run()
   {
-     intellegence.setCommData(commData);
+     intellegence.setCommData(this.commData);
      for(AntData antData : commData.myAntList)
      {
          if(antIdSet.contains(antData.id))

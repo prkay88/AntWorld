@@ -49,6 +49,7 @@ public class ClientRandomWalk
   private ExecutorService executor = Executors.newFixedThreadPool(numThreads);
   private ArrayList<ArrayList<AntData>> antDataListsForThreads = new ArrayList<>();
   private ArrayList<WorkerThread> workerThreads = new ArrayList<>();
+  private ArrayList<Swarm> swarmList = new ArrayList<>();
 
   public ClientRandomWalk(String host, int portNumber)
   {
@@ -68,6 +69,8 @@ public class ClientRandomWalk
     initializeAntDataLists();
     assignAntsToWorkerThreads(data);
     initiailizeWorkerThreadList();
+    initializeSwarms(data);
+    assignAntsToSwarm(data);
     mainGameLoop(data);
     closeAll();
   }
@@ -89,6 +92,28 @@ public class ClientRandomWalk
       antDataListsForThreads.add(i, antDataList);
     }
   }
+
+  private void initializeSwarms(CommData commData)
+  {
+    for(int i=0; i<4; i++)
+    {
+      SwarmAI swarmAI = new SwarmAI(i,commData, null);
+      Swarm swarm = new Swarm(i, 0, 0, 50, swarmAI, commData);
+      swarmList.add(i,swarm);
+    }
+  }
+
+  private void assignAntsToSwarm(CommData commData)
+  {
+    int swarmNum;
+    for(AntData antData : commData.myAntList)
+    {
+      swarmNum = antData.id % 4;
+      swarmList.get(swarmNum).addAntToIDSet(antData);
+    }
+  }
+
+
 
   private void assignAntsToWorkerThreads(CommData commData)
   {
@@ -321,20 +346,10 @@ public class ClientRandomWalk
       world[food.gridX][food.gridY].setFoodType(food.foodType);
       System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
     }
-    assignAntsToWorkerThreads(commData);
-    for(int i=0; i<1; i++)
+    for(Swarm swarm : swarmList)
     {
-      if(!antDataListsForThreads.get(i).isEmpty())
-      {
-
-
-        WorkerThread workerThread = workerThreads.get(i);
-        //workerThread.setAntDataList(antDataListsForThreads.get(i));
-        //workerThread.setIntelligence(testAI);
-        workerThread.setCommData(commData);
-        executor.execute(workerThread);
-      }
-
+      swarm.setCommData(commData);
+      swarm.chooseActionForSwarm(commData);
     }
     //WorkerThread wk = new WorkerThread(commData.myAntList, commData);
     //wk.setIntelligence(testAI);
