@@ -249,7 +249,7 @@ public class ClientRandomWalk
 
   private void createMap()
   {
-    BufferedImage map = Util.loadImage("AStarTest1.png", null);
+    BufferedImage map = Util.loadImage("SmallMap1.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
   }

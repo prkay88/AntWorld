@@ -93,7 +93,7 @@ public class FoodSpawnSite implements Serializable
       if (!myCell.isEmpty())  continue;
 
 //      FoodData foodPile = new FoodData(foodType, x, y, count); //TODO: uncomment for proper behavior
-      FoodData foodPile = new FoodData(foodType, x, y, 600); //TODO: delete for proper behavior
+      FoodData foodPile = new FoodData(foodType, x, y, 0); //TODO: delete for proper behavior
       world.addFood(this, foodPile);
       spawnCount++;
       activeFoodPileCount++;
