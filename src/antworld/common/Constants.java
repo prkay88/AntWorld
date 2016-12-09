@@ -15,7 +15,7 @@ public class Constants
   public static final int UNKNOWN_ANT_ID = -1;//use by client for ants being birthed
   
   public static Random random = new Random();
-  
+ // public static final int PORT = 5555;
   public static final int PORT = 12321;
 }
 

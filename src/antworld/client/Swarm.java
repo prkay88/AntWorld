@@ -2,10 +2,12 @@ package antworld.client;
 
 import antworld.common.AntData;
 import antworld.common.CommData;
+import antworld.common.FoodData;
 import antworld.common.Util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Random;
 
 /**
  * Created by Phillip on 12/6/2016.
@@ -23,6 +25,9 @@ public class Swarm extends Thread
   private AI intellegence;
   private CommData commData;
   private HashSet<Integer> antIdSet = new HashSet<>();
+  private Random random = new Random();
+
+
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
 
@@ -136,6 +141,58 @@ public class Swarm extends Thread
       middleRadius = middleRadius*expandFactor;
       outerRadius = outerRadius*expandFactor;
   }
+  //Basic moving the center of swarm.
+  //Need to implement a check of map bounds
+  public void moveSwarmCenterExplore()
+  {
+      //move Swarm NE
+      if(SWARMID % 4 == 0)
+      {
+          centerX = centerX+ random.nextInt(20);
+          centerY = centerY - random.nextInt(20);
+      }
+      //move Swarm NW
+      else if(SWARMID % 4 == 1)
+      {
+          centerX = centerX-random.nextInt(20);
+          centerY = centerY-random.nextInt(20);
+      }
+      //move Swarm SW
+      else if(SWARMID %4 == 2)
+      {
+          centerX = centerX-random.nextInt(20);
+          centerY = centerY+random.nextInt(20);
+      }
+      //move Swarm SE
+      else if(SWARMID %4 == 3)
+      {
+          centerX = centerX + random.nextInt(20);
+          centerY = centerY + random.nextInt(20);
+      }
+  }
+
+  public void moveSwarmCenterTowardsNest()
+  {
+      int nestX = commData.nestData[commData.myNest.ordinal()].centerX;
+      int nestY = commData.nestData[commData.myNest.ordinal()].centerY;
+      if(nestX > centerX )
+      {
+          centerX = centerX +20;
+
+      }
+      else if(nestX < centerX )
+      {
+          centerX = centerX - 20;
+      }
+      if(nestY > centerY)
+      {
+          centerY = centerY +20;
+      }
+      else if(nestY < centerY)
+      {
+          centerY = centerY-20;
+      }
+  }
 
   public void addAntToIDSet(AntData antData)
   {
@@ -163,6 +220,8 @@ public class Swarm extends Thread
       this.commData = commData;
   }
 
+
+
 //Still need to figure out how to get multi thread working
     @Override
   public void run()
@@ -183,6 +242,8 @@ public class Swarm extends Thread
                  }
 
              }
+             ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
+      System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
 
 
 

@@ -16,7 +16,7 @@ public class ClientCell
   int y;
   int cost = 0;
   FoodType foodType;
-  ArrayList<ClientCell> neighbors = new ArrayList<>();
+  private ArrayList<ClientCell> neighbors = new ArrayList<>();
 
   public ClientCell(LandType landType, int height, int x, int y)
   {
@@ -32,6 +32,14 @@ public class ClientCell
     else
     {
       this.height = height;
+    }
+  }
+
+  public ArrayList<ClientCell> getNeighbors()
+  {
+    synchronized (this)
+    {
+      return this.neighbors;
     }
   }
 
@@ -52,6 +60,7 @@ public class ClientCell
 
   public void findNeighbors()
   {
+
     for(int i =-1; i<=1; i++)
     {
       if(x + i >= 0 && x + i <= ClientRandomWalk.mapWidth)
@@ -60,7 +69,11 @@ public class ClientCell
         {
           if(y + j >= 0 && y + j <= ClientRandomWalk.mapHeight)
           {
-            neighbors.add(ClientRandomWalk.world[x+i][y+j]);
+            synchronized (ClientRandomWalk.world[x+i][y+i])
+            {
+              neighbors.add(ClientRandomWalk.world[x+i][y+j]);
+            }
+
             //System.out.println(x+i + " and " + y+j + " are neighbors of " + x + " and " + y );
           }
         }

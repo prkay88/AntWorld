@@ -71,7 +71,7 @@ public class AStar {
       }
       //if(current.neighbors == null || current.neighbors.isEmpty())
       current.findNeighbors();
-      for(ClientCell clientCell : current.neighbors)
+      for(ClientCell clientCell : current.getNeighbors())
       {
 //        System.out.println("In AStar "+ "current's type="+current.landType+ ", its cost="+(costSoFar.get(current))
 //        +" its coordinates="+" ("+current.x+", "+current.y+") "+"clientCell=("+clientCell.x+", "+clientCell.y+")"); //TODO: this is where the null pointer exception is
@@ -81,6 +81,7 @@ public class AStar {
         if(!costSoFar.containsKey(clientCell) || newCost < costSoFar.get(clientCell))
         {
           costSoFar.put(clientCell, newCost);
+          if(clientCell.equals(null)) System.out.println("Neighbor Cell is Null");
           int priority = newCost + Util.manhattanDistance(clientCell.x, clientCell.y, goalX, goalY);
           clientCell.setCost(priority);
           frontier.add(clientCell);
