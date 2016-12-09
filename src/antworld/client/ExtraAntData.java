@@ -50,6 +50,7 @@ public class ExtraAntData
   public void updateRoamingDirection()
   {
     mainDirection = Direction.getRandomDir();
-    ticksTillUpdate = Constants.random.nextInt(10);
+    ticksTillUpdate = Constants.random.nextInt(1500)+1000;
+//    ticksTillUpdate = Constants.random.nextInt(10);
   }
 }

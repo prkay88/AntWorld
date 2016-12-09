@@ -52,7 +52,7 @@ public class AntWorld implements ActionListener
   private ArrayList<FoodSpawnSite> foodSpawnList;
   private static int gameTick = 0;
 
-  private boolean DEBUG = true; //for debugging pruposes
+  private boolean DEBUG = false; //for debugging pruposes
   private int mapNum = 3; //for debugging pruposes
 
   public AntWorld(boolean showGUI, String restorePoint)

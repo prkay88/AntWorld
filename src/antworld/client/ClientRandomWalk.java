@@ -56,6 +56,7 @@ public class ClientRandomWalk
   public ClientRandomWalk(String host, int portNumber)
   {
     System.out.println("Starting ClientRandomWalk: " + System.currentTimeMillis());
+    createMap();
     isConnected = false;
     while (!isConnected)
     {
@@ -67,7 +68,6 @@ public class ClientRandomWalk
     testAI = new RandomWalkAI(data, null, myNestName);
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
-    createMap();
     initializeAntDataLists();
     assignAntsToWorkerThreads(data);
     initiailizeWorkerThreadList();
@@ -210,8 +210,8 @@ public class ClientRandomWalk
     {
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
       //TODO: Uncomment for proper behavior
-//      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
-      NestNameEnum requestedNest = NestNameEnum.HARVESTER;
+      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
+//      NestNameEnum requestedNest = NestNameEnum.HARVESTER;
       CommData data = new CommData(requestedNest, myTeam);
       data.password = password;
 
@@ -253,7 +253,7 @@ public class ClientRandomWalk
 
   private void createMap()
   {
-    BufferedImage map = Util.loadImage("SmallMap1.png", null);
+    BufferedImage map = Util.loadImage("AntWorld.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
   }
