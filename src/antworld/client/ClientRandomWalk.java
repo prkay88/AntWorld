@@ -282,34 +282,65 @@ public class ClientRandomWalk
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
   
-        System.out.println("Client starting to choose action for all ants");
-        chooseActionsOfAllAnts(data);
-        while (readyThreadCounter.numThreadsReady<4)
+        System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
+        
+        
+        boolean allSwarmsReady = true;
+        for (Swarm swarm : swarmList)
         {
-          //System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
-          continue;
+          if (swarm.turnFinished == false)
+          {
+            allSwarmsReady = false;
+            break;
+          }
         }
-        System.out.println("CLient ready to send data");
-        readyThreadCounter.numThreadsReady =0;
-        spawnNewAnt(data); //try to spawn ants when possible
-  
-        CommData sendData = data.packageForSendToServer();
-        System.out.println("testAI.antStatusHashMap size="+testAI.antStatusHashMap.size());
-          
-        System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
-        outputStream.writeObject(sendData);
-        outputStream.flush();
-        outputStream.reset();
-
-
-        if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
-        CommData receivedData = (CommData) inputStream.readObject();
-        if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + receivedData);
-        data = receivedData;
-
-        if ((myNestName == null) || (data.myTeam != myTeam))
+        
+        if (!allSwarmsReady)
         {
-          System.err.println("ClientRandomWalk: !!!!ERROR!!!! " + myNestName);
+          chooseActionsOfAllAnts(data);
+        }
+        
+//        if (numThreadsReady == 0)
+//        {
+//          System.out.println("Client starting to choose action for all ants");
+//          chooseActionsOfAllAnts(data);
+//        }
+//        while (readyThreadCounter.numThreadsReady < 4)
+//        {
+//          System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
+//          continue;
+//        }
+//        if (numThreadsReady >= 4)
+        if (allSwarmsReady)
+        {
+          System.out.println("CLient ready to send data");
+          readyThreadCounter.numThreadsReady = 0;
+          spawnNewAnt(data); //try to spawn ants when possible
+          
+          CommData sendData = data.packageForSendToServer();
+          System.out.println("testAI.antStatusHashMap size=" + testAI.antStatusHashMap.size());
+  
+          System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
+          outputStream.writeObject(sendData);
+          outputStream.flush();
+          outputStream.reset();
+          
+          //reset swarm's turn status
+          for (Swarm swarm : swarmList)
+          {
+            swarm.turnFinished = false;
+          }
+  
+          if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
+          CommData receivedData = (CommData) inputStream.readObject();
+          if (DEBUG)
+            System.out.println("ClientRandomWalk: received <<<<<<<<<" + inputStream.available() + "<...\n" + receivedData);
+          data = receivedData;
+  
+          if ((myNestName == null) || (data.myTeam != myTeam))
+          {
+            System.err.println("ClientRandomWalk: !!!!ERROR!!!! " + myNestName);
+          }
         }
       }
       catch (IOException e)
@@ -325,6 +356,7 @@ public class ClientRandomWalk
         e.printStackTrace();
         System.exit(0);
       }
+      
     }
   }
 
