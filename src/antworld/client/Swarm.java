@@ -26,6 +26,8 @@ public class Swarm extends Thread
   private CommData commData;
   private HashSet<Integer> antIdSet = new HashSet<>();
   private Random random = new Random();
+
+
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
 
@@ -218,6 +220,8 @@ public class Swarm extends Thread
       this.commData = commData;
   }
 
+
+
 //Still need to figure out how to get multi thread working
     @Override
   public void run()
@@ -238,6 +242,8 @@ public class Swarm extends Thread
                  }
 
              }
+             ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
+      System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
 
 
 

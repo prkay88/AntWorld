@@ -50,6 +50,8 @@ public class ClientRandomWalk
   private ArrayList<ArrayList<AntData>> antDataListsForThreads = new ArrayList<>();
   private ArrayList<WorkerThread> workerThreads = new ArrayList<>();
   private ArrayList<Swarm> swarmList = new ArrayList<>();
+   static volatile int numThreadsReady = 0;
+  public static ReadyThreadCounter readyThreadCounter = new ReadyThreadCounter();
 
   public ClientRandomWalk(String host, int portNumber)
   {
@@ -74,6 +76,7 @@ public class ClientRandomWalk
     mainGameLoop(data);
     closeAll();
   }
+
 
   public int getCenterX()
   {
@@ -279,8 +282,15 @@ public class ClientRandomWalk
         if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
         if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
   
-        
+        System.out.println("Client starting to choose action for all ants");
         chooseActionsOfAllAnts(data);
+        while (readyThreadCounter.numThreadsReady<4)
+        {
+          //System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
+          continue;
+        }
+        System.out.println("CLient ready to send data");
+        readyThreadCounter.numThreadsReady =0;
         spawnNewAnt(data); //try to spawn ants when possible
   
         CommData sendData = data.packageForSendToServer();
@@ -351,10 +361,12 @@ public class ClientRandomWalk
     for(Swarm swarm : swarmList)
     {
       swarm.setCommData(commData);
-      //executor.execute(swarm);
+      executor.execute(swarm);
 
-      swarm.chooseActionForSwarm(commData);
+      //swarm.chooseActionForSwarm(commData);
     }
+
+
     //WorkerThread wk = new WorkerThread(commData.myAntList, commData);
     //wk.setIntelligence(testAI);
     //wk.start();
