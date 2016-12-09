@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RandomWalkAI extends AI
 {
   
-  private int aggroRadius = 10;
+  private int aggroRadius = 5;
   private int healthThreshold = 15;
   AStar aStarObject; //initialized to null beginning and end
   LinkedList<ClientCell> AStarPath = null; //look at how AI is given to the ants
@@ -323,8 +323,11 @@ public class RandomWalkAI extends AI
         aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], foodCell);
         extraAntData.setPath(aStarObject.findPath());
         //need to poll first and last to have proper behavior
-        extraAntData.path.pollFirst();
-        extraAntData.path.pollLast();
+        if (extraAntData.path.size() > 3)
+        {
+          extraAntData.path.pollFirst();
+          extraAntData.path.pollLast();
+        }
         int nextX = extraAntData.path.get(extraAntData.nextCellIndex).x;
         int nextY = extraAntData.path.get(extraAntData.nextCellIndex).y;
         antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
@@ -685,8 +688,11 @@ public class RandomWalkAI extends AI
         ClientCell nestCell = ClientRandomWalk.world[centerX-Constants.NEST_RADIUS][centerY];
         aStarObject.setBeginAndEnd(antCell, nestCell);
         extraAntData.setPath(aStarObject.findPath());
-        extraAntData.path.pollFirst();
-        extraAntData.path.pollLast();
+        if (extraAntData.path.size() > 3)
+        {
+          extraAntData.path.pollFirst();
+          extraAntData.path.pollLast();
+        }
         extraAntData.nextCellIndex = 0; //reset to 0 when going home
         extraAntData.action = ExtraAntData.CurrentAction.GOING_HOME; //just go pass through the if statement, expected to pick up food
       }
@@ -716,8 +722,11 @@ public class RandomWalkAI extends AI
         {
           aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], extraAntData.targetfoodCell);
           extraAntData.setPath(aStarObject.findPath());
-          extraAntData.path.pollFirst();
-          extraAntData.path.pollLast();
+          if (extraAntData.path.size() > 3)
+          {
+            extraAntData.path.pollFirst();
+            extraAntData.path.pollLast();
+          }
           extraAntData.nextCellIndex = 0;
           extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
         }

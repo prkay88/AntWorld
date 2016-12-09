@@ -16,7 +16,7 @@ public class ClientCell
   int y;
   int cost = 0;
   FoodType foodType;
-  private ArrayList<ClientCell> neighbors = new ArrayList<>();
+  ArrayList<ClientCell> neighbors = new ArrayList<>();
 
   public ClientCell(LandType landType, int height, int x, int y)
   {
@@ -37,10 +37,11 @@ public class ClientCell
 
   public ArrayList<ClientCell> getNeighbors()
   {
-    synchronized (this)
-    {
+    //synchornization problem on ClientCell level not the neighbors ArrayList
+//    synchronized (this)
+//    {
       return this.neighbors;
-    }
+//    }
   }
 
   public void setFoodType(FoodType foodType)

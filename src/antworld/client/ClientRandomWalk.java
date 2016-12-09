@@ -210,8 +210,8 @@ public class ClientRandomWalk
     {
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
       //TODO: Uncomment for proper behavior
-      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
-//      NestNameEnum requestedNest = NestNameEnum.HARVESTER;
+//      NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
+      NestNameEnum requestedNest = NestNameEnum.HARVESTER;
       CommData data = new CommData(requestedNest, myTeam);
       data.password = password;
 
@@ -253,7 +253,7 @@ public class ClientRandomWalk
 
   private void createMap()
   {
-    BufferedImage map = Util.loadImage("AntWorld.png", null);
+    BufferedImage map = Util.loadImage("SmallMap1.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
   }
@@ -438,14 +438,18 @@ public class ClientRandomWalk
     }
     AntType[] antTypes = {AntType.ATTACK, AntType.DEFENCE, AntType.MEDIC,
             AntType.SPEED, AntType.VISION, AntType.WORKER};
-
-    if (myScore >= antCount * scoreToAntRatio) {
-      for (AntType antType : antTypes) {
+  
+    if (myScore >= antCount * scoreToAntRatio)
+    {
+      //try: only create speed ants for scouting
+      for (AntType antType : antTypes)
+      {
 //      System.out.println("getFoodUnitsToSpawn() called on " + antType + "=" + (antType.getFoodUnitsToSpawn(FoodType.MEAT)));
         //if required food type is achieved for every ant type, respawn it
         if (commData.foodStockPile[FoodType.MEAT.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.MEAT) >= 0 &&
                 commData.foodStockPile[FoodType.NECTAR.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.NECTAR) >= 0 &&
-                commData.foodStockPile[FoodType.SEEDS.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.SEEDS) >= 0) {
+                commData.foodStockPile[FoodType.SEEDS.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.SEEDS) >= 0)
+        {
 //        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
 //        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
           commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));

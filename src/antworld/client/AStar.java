@@ -64,28 +64,34 @@ public class AStar {
     {
       //System.out.println("AStar frontier is not empty");
       ClientCell current = frontier.poll();
-      if(current.equals(goal))
+      if (current.equals(goal))
       {
         previous = current;
         break;
       }
       //if(current.neighbors == null || current.neighbors.isEmpty())
       current.findNeighbors();
-      for(ClientCell clientCell : current.getNeighbors())
+      synchronized (current.neighbors)
       {
+        for (ClientCell clientCell : current.getNeighbors())
+        {
+//          synchronized (clientCell)
+//          {
 //        System.out.println("In AStar "+ "current's type="+current.landType+ ", its cost="+(costSoFar.get(current))
 //        +" its coordinates="+" ("+current.x+", "+current.y+") "+"clientCell=("+clientCell.x+", "+clientCell.y+")"); //TODO: this is where the null pointer exception is
 //        System.out.println("costSoFar contains key current="+current+"?"+costSoFar.containsKey(current));
-        newCost = costSoFar.get(current) + current.height;
-
-        if(!costSoFar.containsKey(clientCell) || newCost < costSoFar.get(clientCell))
-        {
-          costSoFar.put(clientCell, newCost);
-          if(clientCell.equals(null)) System.out.println("Neighbor Cell is Null");
-          int priority = newCost + Util.manhattanDistance(clientCell.x, clientCell.y, goalX, goalY);
-          clientCell.setCost(priority);
-          frontier.add(clientCell);
-          cameFrom.put(clientCell, current);
+            newCost = costSoFar.get(current) + current.height;
+  
+            if (!costSoFar.containsKey(clientCell) || newCost < costSoFar.get(clientCell))
+            {
+              costSoFar.put(clientCell, newCost);
+              if (clientCell.equals(null)) System.out.println("Neighbor Cell is Null");
+              int priority = newCost + Util.manhattanDistance(clientCell.x, clientCell.y, goalX, goalY);
+              clientCell.setCost(priority);
+              frontier.add(clientCell);
+              cameFrom.put(clientCell, current);
+            }
+//          }
         }
       }
     }

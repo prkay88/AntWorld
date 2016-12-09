@@ -25,7 +25,7 @@ public class FoodSpawnSite implements Serializable
   private int activeFoodPileCount = 0;
   private boolean needSpawn = true;
   private ArrayList<FoodData> foodPileList = new ArrayList<>();
-  private boolean DEBUG = false; //set to false for original behavior
+  private boolean DEBUG = true; //set to false for original behavior
   
   public FoodSpawnSite(FoodType type, int x, int y, int totalNestCount)
   { 
@@ -92,8 +92,8 @@ public class FoodSpawnSite implements Serializable
       if (myCell.getLandType() != LandType.GRASS) continue;
       if (!myCell.isEmpty())  continue;
 
-      FoodData foodPile = new FoodData(foodType, x, y, count); //TODO: uncomment for proper behavior
-//      FoodData foodPile = new FoodData(foodType, x, y, 0); //TODO: delete for proper behavior
+//      FoodData foodPile = new FoodData(foodType, x, y, count); //TODO: uncomment for proper behavior
+      FoodData foodPile = new FoodData(foodType, x, y, 500); //TODO: delete for proper behavior
       world.addFood(this, foodPile);
       spawnCount++;
       activeFoodPileCount++;
