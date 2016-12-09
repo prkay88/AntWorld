@@ -239,11 +239,12 @@ public class Swarm extends Thread
                  {
                      intellegence.setAntData(antData);
                      antData.myAction = intellegence.chooseAction();
+                     System.out.println("antID: "+ antData.id+ " action is: "+antData.myAction);
                  }
 
              }
              ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
-      System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
+      //System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
 
 
 

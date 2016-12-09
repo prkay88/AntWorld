@@ -41,7 +41,7 @@ public class SwarmAI extends AI
         //Problem: Need to not tell the ants to move to a cell with food in it!
 //        AntAction antAction = new AntAction(AntAction.AntActionType.MOVE);
         //ask commData if there is an ant at the position i'm looking to go to.
-        System.out.println("In RWAI choosDirection()");
+        //System.out.println("In RWAI choosDirection()");
         if (startX > goalX && startY > goalY && !positionTaken(startX - 1, startY - 1))
         {
             antAction.direction = Direction.NORTHWEST;
@@ -96,7 +96,7 @@ public class SwarmAI extends AI
         ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
         //TODO: if position taken for the main direction change the antId's ExtraAntData's mainDirection field
         antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
-        System.out.println("In goExplore(), ticksTillNextUpdate="+ extraAntData.ticksTillUpdate);
+       // System.out.println("In goExplore(), ticksTillNextUpdate="+ extraAntData.ticksTillUpdate);
         if (extraAntData.ticksTillUpdate == 0 ||
                 positionTaken(antData.gridX + antAction.direction.deltaX(), antData.gridY + antAction.direction.deltaY()))
         {
@@ -122,7 +122,7 @@ public class SwarmAI extends AI
     @Override
     public boolean underGroundAction()
     {
-        System.out.println("Inside RWAI underGroundAction");
+        //System.out.println("Inside RWAI underGroundAction");
         if (antData.id != Constants.UNKNOWN_ANT_ID && antData.underground)
         {
             if (antData.health >= healthThreshold)
@@ -151,8 +151,8 @@ public class SwarmAI extends AI
                     antAction.x = random.nextInt((centerX+(Constants.NEST_RADIUS-1) - centerX) +1 ) + centerX;
                     antAction.y = random.nextInt(((centerY + Constants.NEST_RADIUS-1) - centerY) +1) + centerY;
                 }
-                System.out.println("CenterX: "+centerX+ " CenterY: "+centerY);
-                System.out.println("SWARMID: "+SWARMID+ " antAction.x: "+antAction.x+ " antAction.y: " +antAction.y);
+               // System.out.println("CenterX: "+centerX+ " CenterY: "+centerY);
+                //System.out.println("SWARMID: "+SWARMID+ " antAction.x: "+antAction.x+ " antAction.y: " +antAction.y);
 
 
 
@@ -220,7 +220,7 @@ public class SwarmAI extends AI
             //return false when there is no adjacent food
             return false;
         }
-   System.out.println("Picking up food.");
+   //System.out.println("Picking up food.");
         return true;
     }
 
