@@ -52,7 +52,8 @@ public class ClientRandomWalk
   private ArrayList<Swarm> swarmList = new ArrayList<>();
    static volatile int numThreadsReady = 0;
   public static ReadyThreadCounter readyThreadCounter = new ReadyThreadCounter();
-
+  ArrayList<ClientCell> nestCenterCells = new ArrayList<>();
+  
   public ClientRandomWalk(String host, int portNumber)
   {
     System.out.println("Starting ClientRandomWalk: " + System.currentTimeMillis());
@@ -256,6 +257,11 @@ public class ClientRandomWalk
     BufferedImage map = Util.loadImage("SmallMap1.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
+    System.out.println("Nest Center Cells:");
+    for (ClientCell nestCenterCell : nestCenterCells)
+    {
+      System.out.println("("+nestCenterCell.x + ", " +nestCenterCell.y+")");
+    }
   }
 
   public void mainGameLoop(CommData data)
@@ -426,6 +432,8 @@ public class ClientRandomWalk
     this.mapHeight = mapHeight;
     this.mapWidth = mapWidth;
     world = new ClientCell[mapWidth][mapHeight];
+    
+    
     for(int y=0; y<mapHeight; y++)
     {
       for(int x=0; x<mapWidth; x++)
@@ -433,6 +441,7 @@ public class ClientRandomWalk
         int rgb = (map.getRGB(x, y) & 0x00FFFFFF);
         LandType landType = LandType.GRASS;
         int height = 0;
+        boolean isNestCenter = false;
         if (rgb == 0xF0E68C)
         {
           landType = LandType.NEST;
@@ -445,6 +454,7 @@ public class ClientRandomWalk
         {
           //treat black dots as grass
           landType = LandType.GRASS;
+          isNestCenter = true;
         }
         else
         {
@@ -455,6 +465,11 @@ public class ClientRandomWalk
         // ", landType="+landType
         // +" height="+height);
         world[x][y] = new ClientCell(landType, height, x, y);
+        if (isNestCenter)
+        {
+          nestCenterCells.add(world[x][y]);
+        }
+        isNestCenter = false;
       }
     }
   }
