@@ -555,7 +555,7 @@ public class SwarmAI extends AI
       }
     }
     
-    antAction = new AntAction(AntAction.AntActionType.STASIS);
+    //antAction = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
 
 //    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);

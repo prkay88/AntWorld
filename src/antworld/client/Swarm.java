@@ -27,6 +27,7 @@ public class Swarm extends Thread
   private HashSet<Integer> antIdSet = new HashSet<>();
   private Random random = new Random();
   public boolean turnFinished = false;
+  public boolean executing = false;
   
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
