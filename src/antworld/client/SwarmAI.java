@@ -115,7 +115,7 @@ public class SwarmAI extends AI
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
     
     //TODO: delete this:
-    antAction.direction = Direction.WEST;
+//    antAction.direction = Direction.WEST;
     
     return true;
   }
@@ -154,6 +154,7 @@ public class SwarmAI extends AI
         }
         System.out.println("CenterX: " + centerX + " CenterY: " + centerY);
         System.out.println("SWARMID: " + SWARMID + " antAction.x: " + antAction.x + " antAction.y: " + antAction.y);
+
 //        antAction.x = centerX - 9;
 //        antAction.y = centerY;
         
@@ -173,17 +174,53 @@ public class SwarmAI extends AI
   {
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     //right now its not picking up food unless target food cell is not null
-    if (extraAntData.targetfoodCell == null /*&& !(extraAntData.action == ExtraAntData.CurrentAction.ROAMING)*/) return false;
     int antX = antData.gridX;
     int antY = antData.gridY;
+    int foodX = 0;
+    int foodY = 0;
+    int currentClosestX = 99999999; //to find the closest food's x coord
+    int currentClosestY = 99999999; //to find the closest food's y coord
+    //TODO: the food set is small, so iterating to it to check if a food is close is not a big deal
+    if (extraAntData.targetfoodCell == null)
+    {
+      for (FoodData foodData : commData.foodSet)
+      {
+        if (Util.manhattanDistance(antX, antY, foodData.gridX, foodData.gridY) <=
+            Util.manhattanDistance(currentClosestX, currentClosestY, antX, antY))
+        {
+          foodX = foodData.gridX;
+          foodY = foodData.gridY;
+        }
+      }
+      if (foodX == 0 && foodY == 0)
+      {
+        return  false;
+      }
+      //find A* path to food
+      extraAntData.targetfoodCell = ClientRandomWalk.world[foodX][foodY];
+      aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], extraAntData.targetfoodCell);
+      extraAntData.setPath(aStarObject.findPath());
+      if (extraAntData.path.size() > 3)
+      {
+        extraAntData.path.pollFirst();
+        extraAntData.path.pollLast();
+      }
+      extraAntData.nextCellIndex = 0;
+      extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
+    }
     
-    //not all ants will have a foodX and foodY because targetfoodCell is sometimes null
-    int foodX = extraAntData.targetfoodCell.x;
-    int foodY = extraAntData.targetfoodCell.y;
+    if (extraAntData.targetfoodCell != null)
+    {
+      //not all ants will have a foodX and foodY because targetfoodCell is sometimes null
+      foodX = extraAntData.targetfoodCell.x;
+      foodY = extraAntData.targetfoodCell.y;
+    }
     
     antAction.type = AntAction.AntActionType.PICKUP;
-    antAction.quantity = antData.antType.getCarryCapacity(); //TODO: better so far, uncomment for proper behavior
+    antAction.quantity = antData.antType.getCarryCapacity();
     
+    //means there is no food in the food set of commData
+      
     if (foodX == antX && foodY == antY - 1)
     {
       antAction.direction = Direction.NORTH;
@@ -714,7 +751,7 @@ public class SwarmAI extends AI
   
     if (pickUpFoodAdjacent()) return this.antAction;
     
-    if (goToFood()) return this.antAction;
+//    if (goToFood()) return this.antAction;
   
     if (attackAdjacent()) return this.antAction;
     
