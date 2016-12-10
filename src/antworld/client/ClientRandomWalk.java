@@ -255,30 +255,13 @@ public class ClientRandomWalk
   private void createMap()
   {
     BufferedImage map = Util.loadImage("SmallMap1.png", null);
+//    BufferedImage map = Util.loadImage("TestReadMap.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
-    System.out.println("Nest Center Cells:");
-    for (ClientCell nestCenterCell : nestCenterCells)
-    {
-      System.out.println("("+nestCenterCell.x + ", " +nestCenterCell.y+")");
-    }
   }
 
   public void mainGameLoop(CommData data)
   {
-    //BufferedImage map = Util.loadImage("SmallMap3.png", null);
-    //System.out.println("Is map null? map="+map);
-    //readMap(map);
-    //seems to work:
-//    for(int y=0; y<map.getHeight(); y++)
-//    {
-//      for(int x=0; x<map.getWidth(); x++)
-//      {
-//        System.out.print(world[x][y].landType +" ");
-//      }
-//      System.out.println();
-//    }
-//    System.exit(0);
     startAllSwarms();
     boolean chooseActionOfAllAntsCompleted = false;
     while (true)
@@ -435,7 +418,6 @@ public class ClientRandomWalk
     this.mapWidth = mapWidth;
     world = new ClientCell[mapWidth][mapHeight];
     
-    
     for(int y=0; y<mapHeight; y++)
     {
       for(int x=0; x<mapWidth; x++)
@@ -463,15 +445,20 @@ public class ClientRandomWalk
           int g = (rgb & 0x0000FF00) >> 8;
           height = g - 55;
         }
-        // System.out.println("("+x+","+y+") rgb="+rgb +
-        // ", landType="+landType
-        // +" height="+height);
         world[x][y] = new ClientCell(landType, height, x, y);
         if (isNestCenter)
         {
           nestCenterCells.add(world[x][y]);
         }
-        isNestCenter = false;
+      }
+    }
+    
+    for (int x=0; x < this.mapWidth; x++)
+    {
+      for (int y=0; y < this.mapHeight; y++)
+      {
+        System.out.println("In ClientRandomWalk finding neighbors of: ("+x+", "+y+")");
+        world[x][y].findNeighbors();
       }
     }
   }

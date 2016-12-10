@@ -32,6 +32,7 @@ public class ExtraAntData
   int ticksTillUpdate;
   AntActionType typeFromPreviousTurn;
   Direction directionFromPreviousTurn;
+  int targetAntId = -2;
 //  FoodStatus targetFood;
 //  int indexInAssembly;
 

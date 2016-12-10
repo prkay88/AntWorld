@@ -33,6 +33,7 @@ public class ClientCell
     {
       this.height = height;
     }
+    //find the neighbors in read map when creating each cell and don't call it in A* anymore
   }
 
   public ArrayList<ClientCell> getNeighbors()
@@ -61,20 +62,19 @@ public class ClientCell
 
   public void findNeighbors()
   {
-
     for(int i =-1; i<=1; i++)
     {
-      if(x + i >= 0 && x + i <= ClientRandomWalk.mapWidth)
+      if(x + i >= 0 && x + i < ClientRandomWalk.mapWidth)
       {
         for(int j = -1; j<=1; j++)
         {
-          if(y + j >= 0 && y + j <= ClientRandomWalk.mapHeight)
+          if(y + j >= 0 && y + j < ClientRandomWalk.mapHeight)
           {
-            synchronized (ClientRandomWalk.world[x+i][y+i])
-            {
+            System.out.println("a neighbor is: ("+x+", "+y+")");
+//            synchronized (ClientRandomWalk.world[x+i][y+i])
+//            {
               neighbors.add(ClientRandomWalk.world[x+i][y+j]);
-            }
-
+//            }
             //System.out.println(x+i + " and " + y+j + " are neighbors of " + x + " and " + y );
           }
         }

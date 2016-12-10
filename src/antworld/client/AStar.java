@@ -70,7 +70,7 @@ public class AStar {
         break;
       }
       //if(current.neighbors == null || current.neighbors.isEmpty())
-      current.findNeighbors();
+//      current.findNeighbors();
       synchronized (current.neighbors)
       {
         for (ClientCell clientCell : current.getNeighbors())
