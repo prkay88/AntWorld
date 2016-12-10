@@ -28,6 +28,9 @@ public class Swarm extends Thread
   private Random random = new Random();
   public boolean turnFinished = false;
   public boolean executing = false;
+
+  private int ticksUntilMoveSwarm = 20;
+  private int ticksUntilExpandSwarm = 50;
   
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
@@ -247,6 +250,22 @@ public class Swarm extends Thread
       }
       ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
       //System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
+      ticksUntilMoveSwarm--;
+      ticksUntilExpandSwarm--;
+      if(ticksUntilMoveSwarm == 0)
+      {
+        moveSwarmCenterExplore();
+        ticksUntilMoveSwarm = 20;
+      }
+      if(ticksUntilExpandSwarm == 0)
+      {
+        if(outerRadius <= 500)
+        {
+          expandSwarm(1.5);
+          ticksUntilExpandSwarm = 50;
+        }
+
+      }
       turnFinished = true;
     }
     
