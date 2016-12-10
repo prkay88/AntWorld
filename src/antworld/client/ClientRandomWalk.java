@@ -45,7 +45,7 @@ public class ClientRandomWalk
   //  even in every class were you want a generator.
   private static Random random = Constants.random;
 
-  private int numThreads = 8;
+  private int numThreads = 16;
   private ExecutorService executor = Executors.newFixedThreadPool(numThreads);
   private ArrayList<ArrayList<AntData>> antDataListsForThreads = new ArrayList<>();
   private ArrayList<WorkerThread> workerThreads = new ArrayList<>();
@@ -280,15 +280,16 @@ public class ClientRandomWalk
 //    }
 //    System.exit(0);
     startAllSwarms();
+    boolean chooseActionOfAllAntsCompleted = false;
     while (true)
     {
       testAI.setCommData(data);
       try
       {
-        if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
-        if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
+        //if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
+        //if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
   
-        System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
+        //System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
         
         
         boolean allSwarmsReady = true;
@@ -301,9 +302,10 @@ public class ClientRandomWalk
           }
         }
         
-        if (!allSwarmsReady)
+        if (!chooseActionOfAllAntsCompleted)
         {
           chooseActionsOfAllAnts(data);
+          chooseActionOfAllAntsCompleted = true;
         }
         
 //        if (numThreadsReady == 0)
@@ -325,7 +327,7 @@ public class ClientRandomWalk
           
           CommData sendData = data.packageForSendToServer();
           System.out.println("testAI.antStatusHashMap size=" + testAI.antStatusHashMap.size());
-  
+          chooseActionOfAllAntsCompleted = false;
           System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
           outputStream.writeObject(sendData);
           outputStream.flush();

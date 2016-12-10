@@ -149,9 +149,6 @@ public class SwarmAI extends AI
           antAction.x = random.nextInt((centerX + (Constants.NEST_RADIUS - 1) - centerX) + 1) + centerX;
           antAction.y = random.nextInt(((centerY + Constants.NEST_RADIUS - 1) - centerY) + 1) + centerY;
         }
-        //remove for proper behavior
-        antAction.x = centerX - Constants.NEST_RADIUS;
-        antAction.y = centerY;
         System.out.println("CenterX: " + centerX + " CenterY: " + centerY);
         System.out.println("SWARMID: " + SWARMID + " antAction.x: " + antAction.x + " antAction.y: " + antAction.y);
         
@@ -181,7 +178,6 @@ public class SwarmAI extends AI
     antAction.type = AntAction.AntActionType.PICKUP;
     antAction.quantity = antData.antType.getCarryCapacity(); //TODO: better so far, uncomment for proper behavior
     
-    if (antData.carryUnits < antData.antType.getCarryCapacity())
     if (foodX == antX && foodY == antY - 1)
     {
       antAction.direction = Direction.NORTH;
@@ -220,15 +216,6 @@ public class SwarmAI extends AI
       //return false when there is no adjacent food
       return false;
     }
-    //food is reached, find an A* path to go home
-//    ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
-//    ClientCell nestCell = ClientRandomWalk.world[centerX - Constants.NEST_RADIUS][centerY];
-//    aStarObject.setBeginAndEnd(antCell, nestCell);
-//    extraAntData.setPath(aStarObject.findPath());
-//    extraAntData.path.pollFirst();
-//    extraAntData.path.pollLast();
-//    extraAntData.nextCellIndex = 0; //reset to 0 when going home
-//    extraAntData.action = ExtraAntData.CurrentAction.GOING_HOME; //just go pass through the if statement, expected to pick up food
     System.out.println("Picking up food.");
     return true;
   }
@@ -297,6 +284,7 @@ public class SwarmAI extends AI
         }
         int nextX = extraAntData.path.get(extraAntData.nextCellIndex).x;
         int nextY = extraAntData.path.get(extraAntData.nextCellIndex).y;
+        
         antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
         if (extraAntData.nextCellIndex < extraAntData.path.size())
         {
@@ -306,11 +294,7 @@ public class SwarmAI extends AI
           }
         }
         extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
-        antStatusHashMap.get(antData.id).typeFromPreviousTurn = antAction.type;
-        antStatusHashMap.get(antData.id).directionFromPreviousTurn = antAction.direction;
-        System.out.println("In goToFood(): ("+extraAntData.targetfoodCell.x+", "+extraAntData.targetfoodCell.y+")");
-        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY); //uncomment for proper behavior
-//        System.exit(1);
+//        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY); //uncomment for proper behavior
         return true;
         
       }
@@ -549,7 +533,6 @@ public class SwarmAI extends AI
     }
     
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
-//    if (pickUpFoodAdjacent()) return this.antAction;
     //priority is to spawn ants
 //    if (spawnNewAnt()) return antAction;
     if (extraAntData.targetfoodCell != null)
@@ -572,8 +555,7 @@ public class SwarmAI extends AI
       }
     }
     
-    antAction = new AntAction(AntAction.AntActionType.STASIS);
-    System.out.println("ticksUntilNextAction=" + antData.ticksUntilNextAction);
+    //antAction = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
 
 //    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
@@ -590,7 +572,6 @@ public class SwarmAI extends AI
         {
           extraAntData.nextCellIndex++;
         }
-        System.out.println("Ant is following food and going to: (" + nextX + ", "+nextY+")");
         return antAction;
       }
       else
@@ -645,14 +626,14 @@ public class SwarmAI extends AI
     if (goToEnemyAnt()) return this.antAction; //always attack when sees an ant
     
     if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood() or goToWater()
-  
-    if (pickUpFoodAdjacent()) return this.antAction;
-  
-    if (goToFood()) return this.antAction;
     
     if (pickUpWater()) return this.antAction;
     
     if (goToWater()) return this.antAction;
+    
+    if (pickUpFoodAdjacent()) return this.antAction;
+    
+    if (goToFood()) return this.antAction;
     
     if (goExplore()) return this.antAction;
     
