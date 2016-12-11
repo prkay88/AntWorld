@@ -20,7 +20,7 @@ import javafx.concurrent.Worker;
 public class ClientRandomWalk
 {
   private static final boolean DEBUG = false;
-  private static final TeamNameEnum myTeam = TeamNameEnum.Arthur_Phil;
+  private static final TeamNameEnum myTeam = TeamNameEnum.RANDOM_WALKERS;
   private static final long password = 962740848319L;//Each team has been assigned a random password.
   private ObjectInputStream inputStream = null;
   private ObjectOutputStream outputStream = null;
@@ -102,7 +102,7 @@ public class ClientRandomWalk
     for(int i=0; i<4; i++)
     {
       SwarmAI swarmAI = new SwarmAI(i,commData, null);
-      Swarm swarm = new Swarm(i, centerX, centerY, 50, swarmAI, commData);
+      Swarm swarm = new Swarm(i, centerX, centerY, 20, swarmAI, commData);
       swarmAI.setMySwarm(swarm);
       swarm.setNestCenterCells(nestCenterCells);
       swarmList.add(i,swarm);
