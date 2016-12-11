@@ -252,7 +252,7 @@ public class ClientRandomWalk
     return null;
   }
 
-  boolean debug = true;
+  boolean debug = false;
   
   private void createMap()
   {

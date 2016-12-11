@@ -191,6 +191,7 @@ public class SwarmAI extends AI
     int foodY = 0;
     int currentClosestX = 99999999; //to find the closest food's x coord
     int currentClosestY = 99999999; //to find the closest food's y coord
+    //TODO: add a check for when the food is already gone (reset the targetFoodX and targetFoodY)
     //TODO: the food set is small, so iterating to it to check if a food is close is not a big deal
 //    if (extraAntData.targetfoodCell == null)
 //    {
@@ -276,7 +277,7 @@ public class SwarmAI extends AI
   public boolean goHomeIfCarryingOrHurt()
   {
     System.out.println("in goHomeIfCarryingOrHurt()");
-    if (antData.carryUnits > 0)
+    if (antData.carryUnits >=  15)
     {
       antAction = chooseDirection(antData.gridX, antData.gridY, centerX, centerY);
       antAction.type = AntAction.AntActionType.MOVE;
