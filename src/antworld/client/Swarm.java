@@ -73,6 +73,7 @@ public class Swarm extends Thread
   
   public void setNestCenterCells(ArrayList<ClientCell> nestCenterCells)
   {
+    System.out.println("In Swarm's setNestCenterCells, nestCenterCells.size()="+nestCenterCells.size());
     this.nestCenterCells = nestCenterCells;
 //
 //    for(ClientCell clientCell : nestCenterCells)
@@ -300,13 +301,13 @@ public class Swarm extends Thread
   
   private void moveTowardsEnemyNest()
   {
-    if (goingTowardsEnemyNest)
-    {
+//    if (goingTowardsEnemyNest)
+//    {
       if (centerX > enemyNestX) centerX--;
       if (centerX < enemyNestX) centerX++;
       if (centerY > enemyNestY) centerY--;
       if (centerY < enemyNestY) centerY++;
-    }
+//    }
   }
   
   public void chooseActionForSwarm(CommData commData)
@@ -384,7 +385,6 @@ public class Swarm extends Thread
   @Override
   public void run()
   {
-    System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY + ")");
     int foodCount = 0;
     int healthOfWeakestAnt = 20;
     int numOfHurtAnts = 0;
@@ -394,6 +394,7 @@ public class Swarm extends Thread
     //System.out.println("Swarm Number: "+ SWARMID+ " is executing next update");
     if (!turnFinished)
     {
+      System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY + ")");
       intellegence.setCommData(this.commData);
       for (AntData antData : commData.myAntList)
       {
@@ -410,9 +411,16 @@ public class Swarm extends Thread
       ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
       //System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
       
+      System.out.println("goingTowardsEnemyNest=" + goingTowardsEnemyNest +
+              ", foodCount < foodUnitsToReturn="+(foodCount < foodUnitsToReturn) +
+              ", healthOfWeakestAnt > minHealthOfAnt="+(numOfHurtAnts < numOfHurtAntsThreshold));
       //TODO: Add more logic to decide what action Swarm does.
-      if (goingTowardsEnemyNest && foodCount < foodUnitsToReturn && healthOfWeakestAnt > minHealthOfAnt)
+      if (goingTowardsEnemyNest && foodCount < foodUnitsToReturn && numOfHurtAnts < numOfHurtAntsThreshold)
+      {
+        System.out.println("inside Swarm's run() going to move the swarm center");
         moveTowardsEnemyNest();
+      }
+      
       else if (foodCount >= foodUnitsToReturn)
       {
         moveSwarmCenterTowardsNest();

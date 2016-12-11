@@ -57,7 +57,6 @@ public class ClientRandomWalk
   public ClientRandomWalk(String host, int portNumber)
   {
     System.out.println("Starting ClientRandomWalk: " + System.currentTimeMillis());
-    createMap();
     isConnected = false;
     while (!isConnected)
     {
@@ -69,6 +68,7 @@ public class ClientRandomWalk
     testAI = new RandomWalkAI(data, null, myNestName);
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
+    createMap();
     initializeAntDataLists();
     assignAntsToWorkerThreads(data);
     initiailizeWorkerThreadList();
@@ -107,6 +107,7 @@ public class ClientRandomWalk
       swarm.setNestCenterCells(nestCenterCells);
       swarmList.add(i,swarm);
     }
+//    System.exit(1);
   }
 
   private void assignAntsToSwarm(CommData commData)
@@ -380,13 +381,16 @@ public class ClientRandomWalk
       world[food.gridX][food.gridY].setFoodType(food.foodType);
       System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
     }
+    System.out.println("swarmList.size()="+swarmList.size());
+//    int runCounter = 0;
     for(Swarm swarm : swarmList)
     {
+//      System.out.println("runCounter="+runCounter);
       swarm.setCommData(commData);
       executor.execute(swarm);
+//      runCounter++;
 //      swarm.chooseActionForSwarm(commData);
     }
-
 
     //WorkerThread wk = new WorkerThread(commData.myAntList, commData);
     //wk.setIntelligence(testAI);
@@ -444,7 +448,7 @@ public class ClientRandomWalk
           height = g - 55;
         }
         world[x][y] = new ClientCell(landType, height, x, y);
-        if (isNestCenter)
+        if (isNestCenter && x != centerX && y != centerY)
         {
           nestCenterCells.add(world[x][y]);
         }
