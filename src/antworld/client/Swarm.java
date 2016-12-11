@@ -179,26 +179,26 @@ public class Swarm extends Thread
     //move Swarm NE
     if (SWARMID % 4 == 0)
     {
-      centerX = centerX + random.nextInt(20);
-      centerY = centerY - random.nextInt(20);
+      centerX = centerX + random.nextInt(3);
+      centerY = centerY - random.nextInt(3);
     }
     //move Swarm NW
     else if (SWARMID % 4 == 1)
     {
-      centerX = centerX - random.nextInt(20);
-      centerY = centerY - random.nextInt(20);
+      centerX = centerX - random.nextInt(3);
+      centerY = centerY - random.nextInt(3);
     }
     //move Swarm SW
     else if (SWARMID % 4 == 2)
     {
-      centerX = centerX - random.nextInt(20);
-      centerY = centerY + random.nextInt(20);
+      centerX = centerX - random.nextInt(3);
+      centerY = centerY + random.nextInt(3);
     }
     //move Swarm SE
     else if (SWARMID % 4 == 3)
     {
-      centerX = centerX + random.nextInt(20);
-      centerY = centerY + random.nextInt(20);
+      centerX = centerX + random.nextInt(3);
+      centerY = centerY + random.nextInt(3);
     }
   }
   
@@ -431,6 +431,10 @@ public class Swarm extends Thread
         if (goToWaterX < 999999 && goToWaterY < 999999) moveSwarmToWater();
         else moveSwarmCenterTowardsNest();
         
+      }
+      else
+      {
+        moveSwarmCenterExplore();
       }
       
       ticksUntilExpandSwarm--;
