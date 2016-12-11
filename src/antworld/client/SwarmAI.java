@@ -200,6 +200,7 @@ public class SwarmAI extends AI
       extraAntData.targetfoodCell = ClientRandomWalk.world[foodX][foodY];
       aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], extraAntData.targetfoodCell);
       extraAntData.setPath(aStarObject.findPath());
+      System.out.println("Finding Path to Food");
       if (extraAntData.path.size() > 3)
       {
         extraAntData.path.pollFirst();
@@ -318,6 +319,7 @@ public class SwarmAI extends AI
         extraAntData.targetfoodCell = foodCell;
         aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], foodCell);
         extraAntData.setPath(aStarObject.findPath());
+        System.out.println("Finding Path to Food");
         //need to poll first and last to have proper behavior
         if (extraAntData.path.size() > 3)
         {

@@ -244,7 +244,7 @@ public class Swarm extends Thread
         {
           intellegence.setAntData(antData);
           antData.myAction = intellegence.chooseAction();
-          System.out.println("antID: " + antData.id + " action is: " + antData.myAction);
+          System.out.println("Swarm Number: "+SWARMID+ " antID: " + antData.id + " action is: " + antData.myAction);
         }
     
       }

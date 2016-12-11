@@ -73,6 +73,7 @@ public class AntWorld implements ActionListener
     {
       map = Util.loadImage("SmallMap1.png", window);
     }
+    //map = Util.loadImage("AntWorld.png", window);
     worldWidth = map.getWidth();
     worldHeight = map.getHeight();
     readAntWorld(map);

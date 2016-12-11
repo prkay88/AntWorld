@@ -255,7 +255,7 @@ public class ClientRandomWalk
   private void createMap()
   {
     BufferedImage map = Util.loadImage("SmallMap1.png", null);
-//    BufferedImage map = Util.loadImage("TestReadMap.png", null);
+    //BufferedImage map = Util.loadImage("AntWorld.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
   }
@@ -263,7 +263,10 @@ public class ClientRandomWalk
   public void mainGameLoop(CommData data)
   {
     startAllSwarms();
+    CommData tempCommData;
+    int currentGameTick;
     boolean chooseActionOfAllAntsCompleted = false;
+    boolean resetTickNumber = false;
     while (true)
     {
       testAI.setCommData(data);
@@ -312,7 +315,20 @@ public class ClientRandomWalk
           System.out.println("testAI.antStatusHashMap size=" + testAI.antStatusHashMap.size());
           chooseActionOfAllAntsCompleted = false;
           System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
+//          int availableBytes =inputStream.available();
+//          while(availableBytes!=0)
+//          {
+//             tempCommData = (CommData)inputStream.readObject();
+//            availableBytes = inputStream.available();
+//            resetTickNumber = true;
+//
+//          }
+//          if(resetTickNumber)
+//          {
+//
+//          }
           outputStream.writeObject(sendData);
+
           outputStream.flush();
           outputStream.reset();
           
@@ -324,6 +340,12 @@ public class ClientRandomWalk
   
           if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
           CommData receivedData = (CommData) inputStream.readObject();
+//           availableBytes = inputStream.available();
+//          while(availableBytes!=0)
+//          {
+//            receivedData = (CommData) inputStream.readObject();
+//            availableBytes = inputStream.available();
+//          }
           if (DEBUG)
             System.out.println("ClientRandomWalk: received <<<<<<<<<" + inputStream.available() + "<...\n" + receivedData);
           data = receivedData;
@@ -453,14 +475,14 @@ public class ClientRandomWalk
       }
     }
     
-    for (int x=0; x < this.mapWidth; x++)
+  /*  for (int x=0; x < this.mapWidth; x++)
     {
       for (int y=0; y < this.mapHeight; y++)
       {
-        System.out.println("In ClientRandomWalk finding neighbors of: ("+x+", "+y+")");
-        world[x][y].findNeighbors();
+        //System.out.println("In ClientRandomWalk finding neighbors of: ("+x+", "+y+")");
+        //world[x][y].findNeighbors();
       }
-    }
+    }*/
   }
   
   
