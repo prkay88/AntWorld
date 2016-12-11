@@ -52,7 +52,7 @@ public class AntWorld implements ActionListener
   private ArrayList<FoodSpawnSite> foodSpawnList;
   private static int gameTick = 0;
 
-  private boolean DEBUG = false; //for debugging pruposes
+  private boolean DEBUG = true; //for debugging pruposes
   private int mapNum = 3; //for debugging pruposes
 
   public AntWorld(boolean showGUI, String restorePoint)
@@ -71,7 +71,8 @@ public class AntWorld implements ActionListener
     }
     else if (DEBUG)
     {
-      map = Util.loadImage("SmallMap1.png", window);
+      map = Util.loadImage("MediumMap1.PNG", window);
+//      map = Util.loadImage("SmallMap1.png", window);
     }
     //map = Util.loadImage("AntWorld.png", window);
     worldWidth = map.getWidth();
@@ -557,8 +558,8 @@ public class AntWorld implements ActionListener
       {
         if(mapNum == 3)
         {
-          spawnX = 84;
-          spawnY = 38;
+//          spawnX = 84;
+//          spawnY = 38;
 //          spawnX = 9;
 //          spawnY = 4;
 //          spawnX = 175;

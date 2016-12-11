@@ -311,6 +311,7 @@ public class SwarmAI extends AI
     int goToY = 0;
     int closestFood = 1000000;
     antAction.type = AntAction.AntActionType.MOVE;
+    //TODO: incorporate targetFoodX and targetFoodY
     if (!commData.foodSet.isEmpty() && commData.foodSet != null)
     {
       for (FoodData food : commData.foodSet)
