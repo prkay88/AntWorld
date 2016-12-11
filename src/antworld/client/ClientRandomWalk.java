@@ -253,14 +253,15 @@ public class ClientRandomWalk
     return null;
   }
 
-  boolean debug = false;
+  boolean debug = true;
   
   private void createMap()
   {
     String mapName = "AntWorld.png";
     if (debug)
     {
-      mapName = "SmallMap1.png";
+      mapName = "MediumMap1.PNG";
+//      mapName = "SmallMap1.png";
     }
     BufferedImage map = Util.loadImage(mapName, null);
 //    BufferedImage map = Util.loadImage("TestReadMap.png", null);
