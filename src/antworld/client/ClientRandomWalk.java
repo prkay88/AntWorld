@@ -102,7 +102,7 @@ public class ClientRandomWalk
     for(int i=0; i<4; i++)
     {
       SwarmAI swarmAI = new SwarmAI(i,commData, null);
-      Swarm swarm = new Swarm(i, centerX, centerY, 50, swarmAI, commData);
+      Swarm swarm = new Swarm(i, centerX, centerY, 20, swarmAI, commData);
       swarmAI.setMySwarm(swarm);
       swarm.setNestCenterCells(nestCenterCells);
       swarmList.add(i,swarm);

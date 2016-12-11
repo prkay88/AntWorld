@@ -32,10 +32,11 @@ public class Swarm extends Thread
   ArrayList<ClientCell> nestCenterCells = new ArrayList<>();
   private int enemyNestX = 999999999;
   private int enemyNestY = 99999999;
-  private int distanceToEnemy = 9999999;
+  private int distanceToEnemy = 99999999;
   private int myNestCenterX;
   private int myNestCenterY;
   private boolean goingTowardsEnemyNest;
+  private boolean havePickedEnemyNest = false;
   private boolean foundFood;
   private boolean foundEnemyAnt;
   private boolean foundWater;
@@ -301,13 +302,13 @@ public class Swarm extends Thread
   
   private void moveTowardsEnemyNest()
   {
-//    if (goingTowardsEnemyNest)
-//    {
+
+
       if (centerX > enemyNestX) centerX--;
       if (centerX < enemyNestX) centerX++;
       if (centerY > enemyNestY) centerY--;
       if (centerY < enemyNestY) centerY++;
-//    }
+
   }
   
   public void chooseActionForSwarm(CommData commData)
@@ -385,6 +386,7 @@ public class Swarm extends Thread
   @Override
   public void run()
   {
+    System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY + ")");
     int foodCount = 0;
     int healthOfWeakestAnt = 20;
     int numOfHurtAnts = 0;
@@ -392,6 +394,11 @@ public class Swarm extends Thread
     //System.out.println("Swarm Number: "+ SWARMID+ " computeNextUpdate is: "+computeNextMove);
     
     //System.out.println("Swarm Number: "+ SWARMID+ " is executing next update");
+    if(!havePickedEnemyNest)
+    {
+      findEnemyNest();
+      havePickedEnemyNest = true;
+    }
     if (!turnFinished)
     {
       System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY + ")");
@@ -440,8 +447,8 @@ public class Swarm extends Thread
       {
         if (outerRadius <= 500)
         {
-          expandSwarm(1.5);
-          ticksUntilExpandSwarm = 30;
+          //expandSwarm(1.5);
+          ticksUntilExpandSwarm = 800;
         }
         
       }
