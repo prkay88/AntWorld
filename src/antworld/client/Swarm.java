@@ -431,7 +431,7 @@ public class Swarm extends Thread
         if(outerRadius <= 500)
         {
           expandSwarm(1.5);
-          ticksUntilExpandSwarm = 30;
+          ticksUntilExpandSwarm = 800;
         }
 
       }

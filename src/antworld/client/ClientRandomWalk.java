@@ -20,7 +20,7 @@ import javafx.concurrent.Worker;
 public class ClientRandomWalk
 {
   private static final boolean DEBUG = false;
-  private static final TeamNameEnum myTeam = TeamNameEnum.RANDOM_WALKERS;
+  private static final TeamNameEnum myTeam = TeamNameEnum.Arthur_Phil;
   private static final long password = 962740848319L;//Each team has been assigned a random password.
   private ObjectInputStream inputStream = null;
   private ObjectOutputStream outputStream = null;
