@@ -93,37 +93,47 @@ public class SwarmAI extends AI
     
     antAction.type = AntAction.AntActionType.MOVE;
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
-    //TODO: if position taken for the main direction change the antId's ExtraAntData's mainDirection field
-    antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
-    System.out.println("In goExplore(), ticksTillNextUpdate=" + extraAntData.ticksTillUpdate);
-    if (extraAntData.ticksTillUpdate == 0 ||
-            positionTaken(antData.gridX + antAction.direction.deltaX(), antData.gridY + antAction.direction.deltaY()))
-    {
-      extraAntData.updateRoamingDirection();
-    }
+    Direction currentDirection = extraAntData.mainDirection;
+    System.out.println("In goExplore():");
+    //TODO: uncomment for A*
+//    System.out.println("In goExplore(), ticksTillNextUpdate=" + extraAntData.ticksTillUpdate);
+//    if (extraAntData.ticksTillUpdate == 0 ||
+//            positionTaken(antData.gridX + antAction.direction.deltaX(), antData.gridY + antAction.direction.deltaY()))
+//    {
+//      extraAntData.updateRoamingDirection();
+//    }
     //checking to see if an is inside swarm. if not choosing random direction until they are.
+    antAction.direction = currentDirection;
+    System.out.println("in goExplore, antAction.direction = " + antAction.direction);
     if (!mySwarm.insideOuterRadius(antData.gridX + antAction.direction.deltaX(), antData.gridY + antAction.direction.deltaY()))
     {
       antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY());
+      System.out.println("In goExplore(): the ant is not inside the outerRadius");
       antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
+      return true;
     }
-    
-    if (extraAntData.ticksTillUpdate > 0)
+    //TODO: uncomment for A*
+//    if (extraAntData.ticksTillUpdate > 0)
+//    {
+//      extraAntData.ticksTillUpdate--;
+//    }
+    //if position taken for the main direction change the antId's ExtraAntData's mainDirection field
+    System.out.println("In goExplore(): current ant direction is " + currentDirection);
+    if (positionTaken(antData.gridX+currentDirection.deltaX(), antData.gridY+currentDirection.deltaY()))
     {
-      extraAntData.ticksTillUpdate--;
+      antStatusHashMap.get(antData.id).updateRoamingDirection();
+      System.out.println("in go Explore(): roaming direction updated");
     }
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
-    
+    return true;
     //TODO: delete this:
 //    antAction.direction = Direction.WEST;
-    
-    return true;
   }
   
   @Override
   public boolean underGroundAction()
   {
-    System.out.println("Inside RWAI underGroundAction");
+    System.out.println("In underGroundAction");
     if (antData.id != Constants.UNKNOWN_ANT_ID && antData.underground)
     {
       if (antData.health >= healthThreshold)
@@ -172,6 +182,7 @@ public class SwarmAI extends AI
   @Override
   public boolean pickUpFoodAdjacent()
   {
+    System.out.println("in pickUpFoodAdjacent");
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     //right now its not picking up food unless target food cell is not null
     int antX = antData.gridX;
@@ -180,9 +191,10 @@ public class SwarmAI extends AI
     int foodY = 0;
     int currentClosestX = 99999999; //to find the closest food's x coord
     int currentClosestY = 99999999; //to find the closest food's y coord
+    //TODO: add a check for when the food is already gone (reset the targetFoodX and targetFoodY)
     //TODO: the food set is small, so iterating to it to check if a food is close is not a big deal
-    if (extraAntData.targetfoodCell == null)
-    {
+//    if (extraAntData.targetfoodCell == null)
+//    {
       for (FoodData foodData : commData.foodSet)
       {
         if (Util.manhattanDistance(antX, antY, foodData.gridX, foodData.gridY) <=
@@ -191,31 +203,29 @@ public class SwarmAI extends AI
           foodX = foodData.gridX;
           foodY = foodData.gridY;
         }
-      }
+//      }
       if (foodX == 0 && foodY == 0)
       {
         return  false;
       }
-      //find A* path to food
-      extraAntData.targetfoodCell = ClientRandomWalk.world[foodX][foodY];
-      aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], extraAntData.targetfoodCell);
-      extraAntData.setPath(aStarObject.findPath());
-      System.out.println("Finding Path to Food");
-      if (extraAntData.path.size() > 3)
-      {
-        extraAntData.path.pollFirst();
-        extraAntData.path.pollLast();
-      }
-      extraAntData.nextCellIndex = 0;
-      extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
+      //TODO: uncomment for A* behavior
+//      extraAntData.targetfoodCell = ClientRandomWalk.world[foodX][foodY];
+//      aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], extraAntData.targetfoodCell);
+//      extraAntData.setPath(aStarObject.findPath());
+//      if (extraAntData.path.size() > 3)
+//      {
+//        extraAntData.path.pollFirst();
+//        extraAntData.path.pollLast();
+//      }
+//      extraAntData.nextCellIndex = 0;
+//      extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
     }
-    
-    if (extraAntData.targetfoodCell != null)
-    {
-      //not all ants will have a foodX and foodY because targetfoodCell is sometimes null
-      foodX = extraAntData.targetfoodCell.x;
-      foodY = extraAntData.targetfoodCell.y;
-    }
+//    if (extraAntData.targetfoodCell != null)
+//    {
+//      //not all ants will have a foodX and foodY because targetfoodCell is sometimes null
+//      foodX = extraAntData.targetfoodCell.x;
+//      foodY = extraAntData.targetfoodCell.y;
+//    }
     
     antAction.type = AntAction.AntActionType.PICKUP;
     antAction.quantity = antData.antType.getCarryCapacity();
@@ -266,7 +276,8 @@ public class SwarmAI extends AI
   @Override
   public boolean goHomeIfCarryingOrHurt()
   {
-    if (antData.carryUnits > 0)
+    System.out.println("in goHomeIfCarryingOrHurt()");
+    if (antData.carryUnits >=  15)
     {
       antAction = chooseDirection(antData.gridX, antData.gridY, centerX, centerY);
       antAction.type = AntAction.AntActionType.MOVE;
@@ -295,11 +306,12 @@ public class SwarmAI extends AI
   @Override
   public boolean goToFood()
   {
+    System.out.println("in goToFood()" + "foodSet size: " + commData.foodSet.size());
     int goToX = 0;
     int goToY = 0;
     int closestFood = 1000000;
     antAction.type = AntAction.AntActionType.MOVE;
-    if (!commData.foodSet.isEmpty() || commData.foodSet != null)
+    if (!commData.foodSet.isEmpty() && commData.foodSet != null)
     {
       for (FoodData food : commData.foodSet)
       {
@@ -311,41 +323,46 @@ public class SwarmAI extends AI
           closestFood = distance;
         }
       }
-      ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
-      //find A* path to the food
-      if (extraAntData.action == ExtraAntData.CurrentAction.ROAMING && goToX != 0 && goToY != 0)
-      {
-        ClientCell foodCell = ClientRandomWalk.world[goToX][goToY];
-        extraAntData.targetfoodCell = foodCell;
-        aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], foodCell);
-        extraAntData.setPath(aStarObject.findPath());
-        System.out.println("Finding Path to Food");
-        //need to poll first and last to have proper behavior
-        if (extraAntData.path.size() > 3)
-        {
-          extraAntData.path.pollFirst();
-          extraAntData.path.pollLast();
-        }
-//        if (extraAntData.path.size() == 0)
+      antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
+      antStatusHashMap.get(antData.id).targetFoodX = goToX;
+      antStatusHashMap.get(antData.id).targetFoodY = goToY;
+      return true;
+      //TODO: trying to remove A*
+//      ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
+//      //find A* path to the food
+//      if (extraAntData.action == ExtraAntData.CurrentAction.ROAMING && goToX != 0 && goToY != 0)
+//      {
+//        ClientCell foodCell = ClientRandomWalk.world[goToX][goToY];
+//        extraAntData.targetfoodCell = foodCell;
+//        aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], foodCell);
+//        extraAntData.setPath(aStarObject.findPath());
+//        //need to poll first and last to have proper behavior
+//        if (extraAntData.path.size() > 3)
 //        {
-//          return false;
+//          extraAntData.path.pollFirst();
+//          extraAntData.path.pollLast();
 //        }
-        int nextX = extraAntData.path.get(extraAntData.nextCellIndex).x;
-        int nextY = extraAntData.path.get(extraAntData.nextCellIndex).y;
-        
-        antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
-        if (extraAntData.nextCellIndex < extraAntData.path.size())
-        {
-          if (!positionTaken(nextX, nextY))
-          {
-            extraAntData.nextCellIndex++;
-          }
-        }
-        extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
-//        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY); //uncomment for proper behavior
-        return true;
-        
-      }
+////        if (extraAntData.path.size() == 0)
+////        {
+////          return false;
+////        }
+//        int nextX = extraAntData.path.get(extraAntData.nextCellIndex).x;
+//        int nextY = extraAntData.path.get(extraAntData.nextCellIndex).y;
+//
+//        antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
+//        if (extraAntData.nextCellIndex < extraAntData.path.size())
+//        {
+//          if (!positionTaken(nextX, nextY))
+//          {
+//            extraAntData.nextCellIndex++;
+//          }
+//        }
+//        extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
+////        antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY); //uncomment for proper behavior
+//        return true;
+//
+//      }
+      //TODO: uncomment till here to get back to the A* implementation
     }
     return false;
   }
@@ -379,6 +396,7 @@ public class SwarmAI extends AI
   @Override
   public boolean goToWater()
   {
+    System.out.println("In goToWater()");
     if (commData.foodStockPile[FoodType.WATER.ordinal()] < 100)
     {
       int antX = antData.gridX;
@@ -419,6 +437,7 @@ public class SwarmAI extends AI
   @Override
   public boolean pickUpWater()
   {
+    System.out.println("in pickUpWater()");
     //x=65, y=140 is the coordinates of one of the water patches in SmallMap3.png
     int antX = antData.gridX;
     int antY = antData.gridY;
@@ -479,6 +498,7 @@ public class SwarmAI extends AI
   @Override
   public boolean attackAdjacent()
   {
+    System.out.println("in attackAdjacent()");
     int antX = antData.gridX;
     int antY = antData.gridY;
     int enemyAntX = 0;
@@ -584,6 +604,7 @@ public class SwarmAI extends AI
   public boolean withinAggro(int myAntX, int myAntY,
                              int enemyAntX, int enemyAntY)
   {
+    System.out.println("in goToEnemyAnt()");
     if (Util.manhattanDistance(myAntX, myAntY, enemyAntX, enemyAntY) <= aggroRadius)
     {
       return true;
@@ -642,7 +663,6 @@ public class SwarmAI extends AI
   @Override
   public AntAction chooseAction()
   {
-    System.out.println("in chooseAction, is enemyAntSet empty?: " + commData.enemyAntSet.isEmpty());
     //so that the newly spawned ants from client random walk will not have to ChooseAction
     if (antData.id == Constants.UNKNOWN_ANT_ID)
     {
@@ -654,122 +674,114 @@ public class SwarmAI extends AI
       //if null StatusType in ExtraAntData, ants has normal StatusType
       antStatusHashMap.put(antData.id, new ExtraAntData(Direction.getRandomDir()));
     }
-    
-    System.out.println("only ant's targetAntId="+antStatusHashMap.get(antData.id).targetAntId);
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
-    //priority is to spawn ants
-//    if (spawnNewAnt()) return antAction;
-    if (extraAntData.targetfoodCell != null)
-    {
-      boolean foodStillThere = false;
-      for (FoodData food : commData.foodSet)
-      {
-        if (food.gridX == extraAntData.targetfoodCell.x && food.gridY == extraAntData.targetfoodCell.y)
-        {
-          foodStillThere = true;
-        }
-      }
-      //if the food is not there anymore, set the ant's action to roaming
-      if (!foodStillThere)
-      {
-        antStatusHashMap.get(antData.id).action = ExtraAntData.CurrentAction.ROAMING;
-        antStatusHashMap.get(antData.id).path.clear();
-        antStatusHashMap.get(antData.id).nextCellIndex = 0;
-        antStatusHashMap.get(antData.id).targetfoodCell = null;
-      }
-    }
+    System.out.println("in chooseAction's extraAntData, target food is at: ("+extraAntData.targetFoodX +", " + extraAntData.targetFoodY+")");
+    //TODO: uncomment for A* behavior
+//    if (extraAntData != null && extraAntData.targetfoodCell != null)
+//    {
+//      boolean foodStillThere = false;
+//      for (FoodData food : commData.foodSet)
+//      {
+//        if (food.gridX == extraAntData.targetfoodCell.x && food.gridY == extraAntData.targetfoodCell.y)
+//        {
+//          foodStillThere = true;
+//        }
+//      }
+//      //if the food is not there anymore, set the ant's action to roaming
+//      if (!foodStillThere)
+//      {
+//        antStatusHashMap.get(antData.id).action = ExtraAntData.CurrentAction.ROAMING;
+//        antStatusHashMap.get(antData.id).path.clear();
+//        antStatusHashMap.get(antData.id).nextCellIndex = 0;
+//        antStatusHashMap.get(antData.id).targetfoodCell = null;
+//      }
+//    }
     
-    //antAction = new AntAction(AntAction.AntActionType.STASIS);
+    antAction = new AntAction(AntAction.AntActionType.STASIS);
     if (antData.ticksUntilNextAction > 0) return this.antAction;
 
+    //TODO: uncomment for A* behavior
 //    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     //System.out.println("Ant's action is currently:" + extraAntData.action);
-    if (extraAntData.action == ExtraAntData.CurrentAction.FOLLOWING_FOOD)
-    {
-      if (extraAntData.nextCellIndex < extraAntData.path.size())
-      {
-        antAction.type = AntAction.AntActionType.MOVE;
-        int nextX = extraAntData.path.get(extraAntData.nextCellIndex).x;
-        int nextY = extraAntData.path.get(extraAntData.nextCellIndex).y;
-        antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
-        if (!positionTaken(nextX, nextY))
-        {
-          extraAntData.nextCellIndex++;
-        }
-        return antAction;
-      }
-      else
-      {
-        //food is reached, find an A* path to go home
-        ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
-        ClientCell nestCell = ClientRandomWalk.world[centerX - Constants.NEST_RADIUS][centerY];
-        aStarObject.setBeginAndEnd(antCell, nestCell);
-        extraAntData.setPath(aStarObject.findPath());
-        if (extraAntData.path.size() > 3)
-        {
-          extraAntData.path.pollFirst();
-          extraAntData.path.pollLast();
-        }
-        extraAntData.nextCellIndex = 0; //reset to 0 when going home
-        extraAntData.action = ExtraAntData.CurrentAction.GOING_HOME; //just go pass through the if statement, expected to pick up food
-      }
-    }
-    else if (extraAntData.action == ExtraAntData.CurrentAction.GOING_HOME)
-    {
-      //TODO: Start working here, stuck on water when trying to get home
-      int nextCellIndex = extraAntData.nextCellIndex;
-      if (extraAntData.nextCellIndex < extraAntData.path.size())
-      {
-        int nextX = extraAntData.path.get(nextCellIndex).x;
-        int nextY = extraAntData.path.get(nextCellIndex).y;
-        antAction.type = AntAction.AntActionType.MOVE;
-        antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
-        if (!positionTaken(nextX, nextY))
-        {
-          extraAntData.nextCellIndex++;
-        }
-        return antAction;
-      }
-      else
-      {
-        //initialize back to the food cell if the food is dropped
-        if (antData.carryUnits == 0)
-        {
-          aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], extraAntData.targetfoodCell);
-          extraAntData.setPath(aStarObject.findPath());
-          if (extraAntData.path.size() > 3)
-          {
-            extraAntData.path.pollFirst();
-            extraAntData.path.pollLast();
-          }
-          extraAntData.nextCellIndex = 0;
-          extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
-        }
-      }
-    }
-    
+//    if (extraAntData.action == ExtraAntData.CurrentAction.FOLLOWING_FOOD)
+//    {
+//      if (extraAntData.nextCellIndex < extraAntData.path.size())
+//      {
+//        antAction.type = AntAction.AntActionType.MOVE;
+//        int nextX = extraAntData.path.get(extraAntData.nextCellIndex).x;
+//        int nextY = extraAntData.path.get(extraAntData.nextCellIndex).y;
+//        antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
+//        if (!positionTaken(nextX, nextY))
+//        {
+//          extraAntData.nextCellIndex++;
+//        }
+//        return antAction;
+//      }
+//      else
+//      {
+//        //food is reached, find an A* path to go home
+//        ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
+//        ClientCell nestCell = ClientRandomWalk.world[centerX - Constants.NEST_RADIUS][centerY];
+//        aStarObject.setBeginAndEnd(antCell, nestCell);
+//        extraAntData.setPath(aStarObject.findPath());
+//        if (extraAntData.path.size() > 3)
+//        {
+//          extraAntData.path.pollFirst();
+//          extraAntData.path.pollLast();
+//        }
+//        extraAntData.nextCellIndex = 0; //reset to 0 when going home
+//        extraAntData.action = ExtraAntData.CurrentAction.GOING_HOME; //just go pass through the if statement, expected to pick up food
+//      }
+//    }
+//    else if (extraAntData.action == ExtraAntData.CurrentAction.GOING_HOME)
+//    {
+//      //TODO: Start working here, stuck on water when trying to get home
+//      int nextCellIndex = extraAntData.nextCellIndex;
+//      if (extraAntData.nextCellIndex < extraAntData.path.size())
+//      {
+//        int nextX = extraAntData.path.get(nextCellIndex).x;
+//        int nextY = extraAntData.path.get(nextCellIndex).y;
+//        antAction.type = AntAction.AntActionType.MOVE;
+//        antAction = chooseDirection(antData.gridX, antData.gridY, nextX, nextY);
+//        if (!positionTaken(nextX, nextY))
+//        {
+//          extraAntData.nextCellIndex++;
+//        }
+//        return antAction;
+//      }
+//      else
+//      {
+//        //initialize back to the food cell if the food is dropped
+//        if (antData.carryUnits == 0)
+//        {
+//          aStarObject.setBeginAndEnd(ClientRandomWalk.world[antData.gridX][antData.gridY], extraAntData.targetfoodCell);
+//          extraAntData.setPath(aStarObject.findPath());
+//          if (extraAntData.path.size() > 3)
+//          {
+//            extraAntData.path.pollFirst();
+//            extraAntData.path.pollLast();
+//          }
+//          extraAntData.nextCellIndex = 0;
+//          extraAntData.action = ExtraAntData.CurrentAction.FOLLOWING_FOOD;
+//        }
+//      }
+//    }
+  
+    if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood() or goToWater()
     
     if (underGroundAction()) return this.antAction; //always exit nest first
-  
-    if (pickUpFoodAdjacent()) return this.antAction;
     
-//    if (goToFood()) return this.antAction;
+    if (pickUpFoodAdjacent()) return this.antAction;
   
     if (attackAdjacent()) return this.antAction;
     
     if (goToEnemyAnt()) return this.antAction; //always attack when sees an ant
-    
-    if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood() or goToWater()
     
     if (goToFood()) return this.antAction;
     
     if (pickUpWater()) return this.antAction;
     
     if (goToWater()) return this.antAction;
-    
-//    if (pickUpFoodAdjacent()) return this.antAction;
-//
-//    if (goToFood()) return this.antAction;
     
     if (goExplore()) return this.antAction;
     

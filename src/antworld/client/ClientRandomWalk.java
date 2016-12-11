@@ -19,7 +19,7 @@ import javafx.concurrent.Worker;
 
 public class ClientRandomWalk
 {
-  private static final boolean DEBUG = true;
+  private static final boolean DEBUG = false;
   private static final TeamNameEnum myTeam = TeamNameEnum.RANDOM_WALKERS;
   private static final long password = 962740848319L;//Each team has been assigned a random password.
   private ObjectInputStream inputStream = null;
@@ -252,10 +252,17 @@ public class ClientRandomWalk
     return null;
   }
 
+  boolean debug = false;
+  
   private void createMap()
   {
-    BufferedImage map = Util.loadImage("SmallMap1.png", null);
-    //BufferedImage map = Util.loadImage("AntWorld.png", null);
+    String mapName = "AntWorld.png";
+    if (debug)
+    {
+      mapName = "SmallMap1.png";
+    }
+    BufferedImage map = Util.loadImage(mapName, null);
+//    BufferedImage map = Util.loadImage("TestReadMap.png", null);
     System.out.println("Is map null? map="+map);
     readMap(map);
   }
@@ -263,10 +270,7 @@ public class ClientRandomWalk
   public void mainGameLoop(CommData data)
   {
     startAllSwarms();
-    CommData tempCommData;
-    int currentGameTick;
     boolean chooseActionOfAllAntsCompleted = false;
-    boolean resetTickNumber = false;
     while (true)
     {
       testAI.setCommData(data);
@@ -287,26 +291,16 @@ public class ClientRandomWalk
             break;
           }
         }
-        
+
         if (!chooseActionOfAllAntsCompleted)
         {
           chooseActionsOfAllAnts(data);
           chooseActionOfAllAntsCompleted = true;
         }
         
-//        if (numThreadsReady == 0)
-//        {
-//          System.out.println("Client starting to choose action for all ants");
-//          chooseActionsOfAllAnts(data);
-//        }
-//        while (readyThreadCounter.numThreadsReady < 4)
-//        {
-//          System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
-//          continue;
-//        }
-//        if (numThreadsReady >= 4)
         if (allSwarmsReady)
         {
+          chooseActionsOfAllAnts(data);
           System.out.println("CLient ready to send data");
           readyThreadCounter.numThreadsReady = 0;
           spawnNewAnt(data); //try to spawn ants when possible
@@ -315,20 +309,7 @@ public class ClientRandomWalk
           System.out.println("testAI.antStatusHashMap size=" + testAI.antStatusHashMap.size());
           chooseActionOfAllAntsCompleted = false;
           System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
-//          int availableBytes =inputStream.available();
-//          while(availableBytes!=0)
-//          {
-//             tempCommData = (CommData)inputStream.readObject();
-//            availableBytes = inputStream.available();
-//            resetTickNumber = true;
-//
-//          }
-//          if(resetTickNumber)
-//          {
-//
-//          }
           outputStream.writeObject(sendData);
-
           outputStream.flush();
           outputStream.reset();
           
@@ -340,12 +321,6 @@ public class ClientRandomWalk
   
           if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
           CommData receivedData = (CommData) inputStream.readObject();
-//           availableBytes = inputStream.available();
-//          while(availableBytes!=0)
-//          {
-//            receivedData = (CommData) inputStream.readObject();
-//            availableBytes = inputStream.available();
-//          }
           if (DEBUG)
             System.out.println("ClientRandomWalk: received <<<<<<<<<" + inputStream.available() + "<...\n" + receivedData);
           data = receivedData;
@@ -407,8 +382,7 @@ public class ClientRandomWalk
     {
       swarm.setCommData(commData);
       executor.execute(swarm);
-
-      //swarm.chooseActionForSwarm(commData);
+//      swarm.chooseActionForSwarm(commData);
     }
 
 
@@ -475,14 +449,14 @@ public class ClientRandomWalk
       }
     }
     
-  /*  for (int x=0; x < this.mapWidth; x++)
-    {
-      for (int y=0; y < this.mapHeight; y++)
-      {
-        //System.out.println("In ClientRandomWalk finding neighbors of: ("+x+", "+y+")");
-        //world[x][y].findNeighbors();
-      }
-    }*/
+//    for (int x=0; x < this.mapWidth; x++)
+//    {
+//      for (int y=0; y < this.mapHeight; y++)
+//      {
+////        System.out.println("In ClientRandomWalk finding neighbors of: ("+x+", "+y+")");
+//        world[x][y].findNeighbors();
+//      }
+//    }
   }
   
   
