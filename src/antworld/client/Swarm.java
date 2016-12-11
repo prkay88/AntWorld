@@ -226,7 +226,7 @@ public class Swarm extends Thread
   @Override
   public void run()
   {
-    System.out.println("Starting Swarm Number: " + SWARMID);
+    System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY +")");
     
     
     //System.out.println("Swarm Number: "+ SWARMID+ " computeNextUpdate is: "+computeNextMove);

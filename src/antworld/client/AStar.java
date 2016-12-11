@@ -70,13 +70,16 @@ public class AStar {
         break;
       }
       //if(current.neighbors == null || current.neighbors.isEmpty())
-//      current.findNeighbors();
+      current.findNeighbors();
+
+//      synchronized (current.neighbors)
       synchronized (current.neighbors)
       {
+//      ArrayList<ClientCell> neighbors = current.getNeighbors();
         for (ClientCell clientCell : current.getNeighbors())
         {
-//          synchronized (clientCell)
-//          {
+          synchronized (ClientRandomWalk.world[clientCell.x][clientCell.y])
+          {
 //        System.out.println("In AStar "+ "current's type="+current.landType+ ", its cost="+(costSoFar.get(current))
 //        +" its coordinates="+" ("+current.x+", "+current.y+") "+"clientCell=("+clientCell.x+", "+clientCell.y+")"); //TODO: this is where the null pointer exception is
 //        System.out.println("costSoFar contains key current="+current+"?"+costSoFar.containsKey(current));
@@ -91,7 +94,7 @@ public class AStar {
               frontier.add(clientCell);
               cameFrom.put(clientCell, current);
             }
-//          }
+          }
         }
       }
     }

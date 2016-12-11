@@ -33,6 +33,8 @@ public class ExtraAntData
   AntActionType typeFromPreviousTurn;
   Direction directionFromPreviousTurn;
   int targetAntId = -2;
+  int targetFoodX;
+  int targetFoodY;
 //  FoodStatus targetFood;
 //  int indexInAssembly;
 
@@ -51,6 +53,7 @@ public class ExtraAntData
   public void updateRoamingDirection()
   {
     mainDirection = Direction.getRandomDir();
+    
     ticksTillUpdate = Constants.random.nextInt(1500)+1000;
 //    ticksTillUpdate = Constants.random.nextInt(10);
   }

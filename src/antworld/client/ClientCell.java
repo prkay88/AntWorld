@@ -70,7 +70,7 @@ public class ClientCell
         {
           if(y + j >= 0 && y + j < ClientRandomWalk.mapHeight)
           {
-            System.out.println("a neighbor is: ("+x+", "+y+")");
+//            System.out.println("a neighbor is: ("+x+", "+y+")");
 //            synchronized (ClientRandomWalk.world[x+i][y+i])
 //            {
               neighbors.add(ClientRandomWalk.world[x+i][y+j]);

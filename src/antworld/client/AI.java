@@ -121,6 +121,7 @@ public class AI
   
   public boolean goToGoodAnt()
   {
+    System.out.println("in goToGoodAnt()");
     return false;
   }
   
