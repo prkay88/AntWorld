@@ -104,6 +104,7 @@ public class ClientRandomWalk
       SwarmAI swarmAI = new SwarmAI(i,commData, null);
       Swarm swarm = new Swarm(i, centerX, centerY, 50, swarmAI, commData);
       swarmAI.setMySwarm(swarm);
+      swarm.setNestCenterCells(nestCenterCells);
       swarmList.add(i,swarm);
     }
   }

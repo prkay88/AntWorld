@@ -1,9 +1,7 @@
 package antworld.client;
 
-import antworld.common.AntData;
-import antworld.common.CommData;
-import antworld.common.FoodData;
-import antworld.common.Util;
+import antworld.common.*;
+import com.sun.xml.internal.bind.v2.TODO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,7 +28,22 @@ public class Swarm extends Thread
   public boolean executing = false;
 
   private int ticksUntilMoveSwarm = 20;
-  private int ticksUntilExpandSwarm = 50;
+  private int ticksUntilExpandSwarm = 30;
+  ArrayList<ClientCell> nestCenterCells = new ArrayList<>();
+  private int enemyNestX=999999999;
+  private int enemyNestY =99999999;
+  private int distanceToEnemy = 9999999;
+  private int myNestCenterX;
+  private int myNestCenterY;
+  private boolean goingTowardsEnemyNest;
+  private boolean foundFood;
+  private boolean foundEnemyAnt;
+  private boolean foundWater;
+  private int foodUnitsToReturn = 20;
+  int minHealthOfAnt = 9;
+  private int goToWaterX = 999999;
+  private int goToWaterY = 999999;
+  private int waterRange = 100;
   
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
@@ -46,6 +59,8 @@ public class Swarm extends Thread
     this.outerRadius = this.innerRadius * 6;
     this.intellegence = intellegence;
     this.commData = commData;
+    myNestCenterX  = commData.nestData[commData.myNest.ordinal()].centerX;
+    myNestCenterY = commData.nestData[commData.myNest.ordinal()].centerY;
   }
   
   public void printAntIDs()
@@ -54,6 +69,17 @@ public class Swarm extends Thread
     {
       System.out.println("Swarm ID is: " + SWARMID + " antId is: " + integer);
     }
+  }
+
+  public void setNestCenterCells(ArrayList<ClientCell> nestCenterCells)
+  {
+    this.nestCenterCells = nestCenterCells;
+//
+//    for(ClientCell clientCell : nestCenterCells)
+//    {
+//      ClientCell cc = new ClientCell(clientCell.landType, clientCell.height, clientCell.x, clientCell.y);
+//      nestCenterCells.add(cc);
+//    }
   }
   
   public void setCenterX(int centerX)
@@ -174,33 +200,113 @@ public class Swarm extends Thread
       centerY = centerY + random.nextInt(20);
     }
   }
+
+  public void findEnemyNest()
+  {
+    int tempDistance;
+    if(SWARMID % 4 == 0)
+    {
+      for(ClientCell clientCell : nestCenterCells)
+      {
+        if(clientCell.x >=myNestCenterX && clientCell.y <=myNestCenterY )
+        {
+          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+          if(tempDistance < distanceToEnemy)
+          {
+            distanceToEnemy = tempDistance;
+            enemyNestX = clientCell.x;
+            enemyNestY = clientCell.y;
+          }
+        }
+      }
+    }
+    else if(SWARMID % 4 == 1)
+    {
+      for(ClientCell clientCell : nestCenterCells)
+      {
+        if(clientCell.x < myNestCenterX && clientCell.y <=myNestCenterY )
+        {
+          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+          if(tempDistance < distanceToEnemy)
+          {
+            distanceToEnemy = tempDistance;
+            enemyNestX = clientCell.x;
+            enemyNestY = clientCell.y;
+          }
+        }
+      }
+    }
+    else if(SWARMID % 4 == 2)
+    {
+      for(ClientCell clientCell : nestCenterCells)
+      {
+        if(clientCell.x < myNestCenterX && clientCell.y >= myNestCenterY )
+        {
+          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+          if(tempDistance < distanceToEnemy)
+          {
+            distanceToEnemy = tempDistance;
+            enemyNestX = clientCell.x;
+            enemyNestY = clientCell.y;
+          }
+        }
+      }
+    }
+    else if(SWARMID % 4 == 3)
+    {
+      for(ClientCell clientCell : nestCenterCells)
+      {
+        if(clientCell.x >= myNestCenterX && clientCell.y >= myNestCenterY )
+        {
+          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+          if(tempDistance < distanceToEnemy)
+          {
+            distanceToEnemy = tempDistance;
+            enemyNestX = clientCell.x;
+            enemyNestY = clientCell.y;
+          }
+        }
+      }
+    }
+    if(enemyNestY < 999999999 && enemyNestX < 999999999) goingTowardsEnemyNest = true;
+  }
   
   public void moveSwarmCenterTowardsNest()
   {
-    int nestX = commData.nestData[commData.myNest.ordinal()].centerX;
-    int nestY = commData.nestData[commData.myNest.ordinal()].centerY;
-    if (nestX > centerX)
+
+    if (myNestCenterX > centerX)
     {
-      centerX = centerX + 20;
+      centerX = centerX ++;
       
     }
-    else if (nestX < centerX)
+    else if (myNestCenterX < centerX)
     {
-      centerX = centerX - 20;
+      centerX = centerX --;
     }
-    if (nestY > centerY)
+    if (myNestCenterY > centerY)
     {
-      centerY = centerY + 20;
+      centerY = centerY ++;
     }
-    else if (nestY < centerY)
+    else if (myNestCenterY < centerY)
     {
-      centerY = centerY - 20;
+      centerY = centerY --;
     }
   }
   
   public void addAntToIDSet(AntData antData)
   {
     antIdSet.add(antData.id);
+  }
+
+  private void moveTowardsEnemyNest()
+  {
+    if(goingTowardsEnemyNest)
+    {
+      if(centerX > enemyNestX) centerX--;
+      if(centerX < enemyNestX) centerX++;
+      if(centerY > enemyNestY) centerY--;
+      if(centerY < enemyNestY) centerY++;
+    }
   }
   
   public void chooseActionForSwarm(CommData commData)
@@ -217,11 +323,61 @@ public class Swarm extends Thread
       
     }
   }
+
+  private void findWaterWithinRange(int range)
+  {
+    boolean foundWater = false;
+    for(int i=0; i<=range; i++)
+    {
+      if(foundWater) break;
+      for(int j=0; j<=range; j++)
+      {
+        if(ClientRandomWalk.world[centerX+i][centerY+j].landType == LandType.WATER)
+        {
+          goToWaterX = ClientRandomWalk.world[centerX+i][centerY].x;
+          goToWaterY = ClientRandomWalk.world[centerX+i][centerY].y;
+          foundWater = true;
+          break;
+        }
+        if(ClientRandomWalk.world[centerX-i][centerY+j].landType ==LandType.WATER)
+        {
+          goToWaterX = ClientRandomWalk.world[centerX-i][centerY+j].x;
+          goToWaterY = ClientRandomWalk.world[centerX-i][centerY+j].y;
+          foundWater = true;
+          break;
+        }
+        if(ClientRandomWalk.world[centerX+i][centerY-j].landType ==LandType.WATER)
+        {
+          goToWaterX = ClientRandomWalk.world[centerX+i][centerY-j].x;
+          goToWaterY = ClientRandomWalk.world[centerX+i][centerY-j].y;
+          foundWater = true;
+          break;
+        }
+        if(ClientRandomWalk.world[centerX-i][centerY-j].landType ==LandType.WATER)
+        {
+          goToWaterX = ClientRandomWalk.world[centerX-i][centerY-j].x;
+          goToWaterY = ClientRandomWalk.world[centerX-i][centerY-j].y;
+          foundWater = true;
+          break;
+        }
+      }
+
+
+    }
+  }
   
   public void executeNextUpdate(CommData commData)
   {
     this.computeNextMove = true;
     this.commData = commData;
+  }
+
+  private void moveSwarmToWater()
+  {
+    if(centerX > goToWaterX) centerX--;
+    if(centerX < goToWaterX) centerX++;
+    if(centerY > goToWaterY) centerY--;
+    if(centerY < goToWaterY) centerY++;
   }
   
   
@@ -230,7 +386,8 @@ public class Swarm extends Thread
   public void run()
   {
     System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY +")");
-    
+    int foodCount=0;
+    int healthOfWeakestAnt=20;
     
     //System.out.println("Swarm Number: "+ SWARMID+ " computeNextUpdate is: "+computeNextMove);
     
@@ -244,25 +401,37 @@ public class Swarm extends Thread
         {
           intellegence.setAntData(antData);
           antData.myAction = intellegence.chooseAction();
+          foodCount +=antData.carryUnits;
+          if(healthOfWeakestAnt > antData.health) healthOfWeakestAnt = antData.health;
           System.out.println("Swarm Number: "+SWARMID+ " antID: " + antData.id + " action is: " + antData.myAction);
         }
     
       }
       ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
       //System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
-      ticksUntilMoveSwarm--;
-      ticksUntilExpandSwarm--;
-      if(ticksUntilMoveSwarm == 0)
+
+      //TODO: Add more logic to decide what action Swarm does.
+      if(goingTowardsEnemyNest && foodCount < foodUnitsToReturn && healthOfWeakestAnt > minHealthOfAnt) moveTowardsEnemyNest();
+      else if(foodCount >= foodUnitsToReturn)
       {
-        moveSwarmCenterExplore();
-        ticksUntilMoveSwarm = 20;
+        moveSwarmCenterTowardsNest();
+        goingTowardsEnemyNest = false;
       }
+      else if(healthOfWeakestAnt <= minHealthOfAnt)
+      {
+        findWaterWithinRange(waterRange);
+        if(goToWaterX < 999999 && goToWaterY < 999999) moveSwarmToWater();
+        else moveSwarmCenterTowardsNest();
+
+      }
+
+      ticksUntilExpandSwarm--;
       if(ticksUntilExpandSwarm == 0)
       {
         if(outerRadius <= 500)
         {
           expandSwarm(1.5);
-          ticksUntilExpandSwarm = 50;
+          ticksUntilExpandSwarm = 30;
         }
 
       }
