@@ -1,7 +1,9 @@
 package antworld.client;
 
-import antworld.common.*;
-import com.sun.xml.internal.bind.v2.TODO;
+import antworld.common.AntData;
+import antworld.common.CommData;
+import antworld.common.LandType;
+import antworld.common.Util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -477,7 +479,7 @@ public class Swarm extends Thread
         goingTowardsEnemyNest = false;
         
       }
-      else if(Util.manhattanDistance(centerX,centerY,myNestCenterX, myNestCenterY) >= MAXEXPLOREDISTANCE)
+      else if(Util.manhattanDistance(centerX, centerY, myNestCenterX, myNestCenterY) >= MAXEXPLOREDISTANCE)
       {
         moveSwarmCenterTowardsNest();
         goingTowardsEnemyNest = false;

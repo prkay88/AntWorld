@@ -1,10 +1,8 @@
 package antworld.client;
 
-import antworld.common.AntAction;
+import antworld.common.AntAction.AntActionType;
 import antworld.common.Constants;
 import antworld.common.Direction;
-import antworld.common.AntAction.AntActionType;
-import com.sun.deploy.util.SessionState;
 
 import java.util.LinkedList;
 

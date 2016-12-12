@@ -1,7 +1,5 @@
 package antworld.client;
 
-import com.sun.deploy.util.SessionState;
-
 import java.util.LinkedList;
 
 /**

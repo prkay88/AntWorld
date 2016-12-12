@@ -1,14 +1,9 @@
 package antworld.server;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Random;
+import antworld.common.*;
 
-import antworld.common.Constants;
-import antworld.common.FoodData;
-import antworld.common.FoodType;
-import antworld.common.LandType;
-import antworld.common.NestNameEnum;
+import java.io.Serializable;
+import java.util.Random;
 
 public class FoodSpawnSite implements Serializable
 {
@@ -18,14 +13,11 @@ public class FoodSpawnSite implements Serializable
   private static final int SPAWN_RADIUS = 30;
   private static final int NUMBER_OF_SPAWNS_PER_RESET = 100;
   private static final int MAX_SIMULTANEOUS_PILES_FROM_SITE = 5;
-  private static final double spawnMedicAnywhereProbability = 0.05;
   private static Random random = Constants.random;
   private int spawnCountSinceReset = 0;
   private boolean[] didNestGatherFromThisSiteRecently; 
   private int activeFoodPileCount = 0;
   private boolean needSpawn = true;
-  private ArrayList<FoodData> foodPileList = new ArrayList<>();
-  private boolean DEBUG = true; //set to false for original behavior
   
   public FoodSpawnSite(FoodType type, int x, int y, int totalNestCount)
   { 
@@ -41,7 +33,7 @@ public class FoodSpawnSite implements Serializable
   public void nestGatheredFood(NestNameEnum nestName, int foodUnitCount)
   {
     if (foodUnitCount <=0)activeFoodPileCount--;
-//    if (foodUnitCount < 5) needSpawn = true; //TODO: uncomment for proper behavior
+    if (foodUnitCount < 5) needSpawn = true;
     if (nestName != null)
     {
       didNestGatherFromThisSiteRecently[nestName.ordinal()] = true;
@@ -74,16 +66,10 @@ public class FoodSpawnSite implements Serializable
 
     while(spawnCount < spawnGoal)
     {
-      int count = (20 + AntWorld.random.nextInt(400));
-      //TODO: If debug, then x and y location becomes the actual food spawn site
+      int count = (20 + AntWorld.random.nextInt(400)); 
+      
       x = locationX + random.nextInt(SPAWN_RADIUS) - random.nextInt(SPAWN_RADIUS);
       y = locationY + random.nextInt(SPAWN_RADIUS) - random.nextInt(SPAWN_RADIUS);
-
-      if(DEBUG)
-      {
-        x = locationX;
-        y = locationY;
-      }
       count *= quantityMultiplier;
 
       
@@ -92,8 +78,7 @@ public class FoodSpawnSite implements Serializable
       if (myCell.getLandType() != LandType.GRASS) continue;
       if (!myCell.isEmpty())  continue;
 
-//      FoodData foodPile = new FoodData(foodType, x, y, count); //TODO: uncomment for proper behavior
-      FoodData foodPile = new FoodData(foodType, x, y, 500); //TODO: delete for proper behavior
+      FoodData foodPile = new FoodData(foodType, x, y, count);
       world.addFood(this, foodPile);
       spawnCount++;
       activeFoodPileCount++;

@@ -1,5 +1,9 @@
 package antworld.server;
 
+import antworld.common.AntData;
+import antworld.common.TeamNameEnum;
+import antworld.server.Nest.NetworkStatus;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -7,10 +11,6 @@ import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
-import antworld.common.AntData;
-import antworld.common.TeamNameEnum;
-import antworld.server.Nest.NetworkStatus;
 
 public class WorldRestore
 {
@@ -76,7 +76,7 @@ public class WorldRestore
       
       while ((obj = inStream.readObject()) != null) 
       {
-        if (obj instanceof FoodSpawnSite) 
+        if (obj instanceof FoodSpawnSite)
         {
           FoodSpawnSite spawnSite = (FoodSpawnSite)obj;
           foodSpawnList.add(spawnSite);
@@ -168,7 +168,7 @@ public class WorldRestore
     {
       if (myNest.team == TeamNameEnum.NEARLY_BRAINLESS_BOTS)
       { ArrayList<AntData> antList = myNest.getAntList();
-        for (AntData ant : antList) 
+        for (AntData ant : antList)
         {
           ant.underground=true;
         }
@@ -237,7 +237,7 @@ public class WorldRestore
 //else if (rgb == 0xDCFFF0) {landType = LandType.GRASS; height = 200;}
 ////System.out.println("("+x+","+y+") rgb="+rgb + ", landType="+landType
 //+" height="+height);
-//world[x][y] = new ClientCell(landType, height, x, y);
+//world[x][y] = new Cell(landType, height, x, y);
 //}
 //}
 //

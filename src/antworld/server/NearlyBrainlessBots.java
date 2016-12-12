@@ -1,21 +1,11 @@
 package antworld.server;
 
 
+import antworld.common.AntAction.AntActionType;
+import antworld.common.*;
+
 import java.util.HashSet;
 import java.util.Random;
-
-import antworld.common.AntData;
-import antworld.common.AntType;
-import antworld.common.CommData;
-import antworld.common.Constants;
-import antworld.common.Direction;
-import antworld.common.FoodData;
-import antworld.common.FoodType;
-import antworld.common.LandType;
-import antworld.common.NestNameEnum;
-import antworld.common.TeamNameEnum;
-import antworld.common.Util;
-import antworld.common.AntAction.AntActionType;
 
 
 public class NearlyBrainlessBots
@@ -41,9 +31,7 @@ public class NearlyBrainlessBots
   private static final int DIR_BIT_ANY_S = DIR_BIT_S | DIR_BIT_SE | DIR_BIT_SW;
   private static final int DIR_BIT_ANY_E = DIR_BIT_E | DIR_BIT_NE | DIR_BIT_SE;
   private static final int DIR_BIT_ANY_W = DIR_BIT_W | DIR_BIT_NW | DIR_BIT_SW;
-  
-  
-  private static final int FLOCK_HAPPY_DIST = 5;
+
   private static final int MAX_EXPLORE_DIST = 300;
   
 
@@ -53,7 +41,7 @@ public class NearlyBrainlessBots
     NearlyBrainlessBots.world = worldTmp;
     NearlyBrainlessBots.myNest = myNestTmp;
     
-    CommData data = new CommData(myNest.nestName, myTeam);
+    CommData data = new CommData(myTeam);
     data.myAntList = myNest.getAntList();
     
     for (AntData ant : data.myAntList)
@@ -115,12 +103,9 @@ public class NearlyBrainlessBots
     }
    
     ant.myAction.type = AntActionType.EXIT_NEST;
-    //TODO: uncomment for proper behavior
     ant.myAction.x = myNest.centerX - Constants.NEST_RADIUS + random.nextInt(2 * Constants.NEST_RADIUS);
     ant.myAction.y = myNest.centerY - Constants.NEST_RADIUS + random.nextInt(2 * Constants.NEST_RADIUS);
-//    ant.myAction.x = myNest.centerX - 9; //TODO: delete this
-//    ant.myAction.y = myNest.centerY;     //TODO: delete this
-    
+
     return true;
   }
   
@@ -265,7 +250,7 @@ public class NearlyBrainlessBots
   public static boolean pickUpWater(AntData ant)
   {
     if (DEBUG) System.out.println("  pickUpWater()");
-    if (myNest.getFoodStockPile(FoodType.WATER) > 3*Constants.INITIAL_NEST_WATER_UNITS) return false;
+    if (myNest.getFoodStockPile(FoodType.WATER) > 3* Constants.INITIAL_NEST_WATER_UNITS) return false;
     
     if (ant.carryUnits > 0) 
     { 
@@ -343,8 +328,7 @@ public class NearlyBrainlessBots
     
     if (dir == null) return false;
     ant.myAction.type = AntActionType.MOVE;
-    ant.myAction.direction = dir; //TODO: uncomment for proper behavior
-//    ant.myAction.direction = Direction.WEST; //TODO: delete this for proper behavior
+    ant.myAction.direction = dir;
     return true;
   }
   

@@ -360,7 +360,9 @@ public class SwarmAI extends AI
           goToY = food.gridY;
           closestFood = distance;
         }
+        if(distance >= 300) return false;
       }
+
       antAction = chooseDirection(antData.gridX, antData.gridY, goToX, goToY);
       antStatusHashMap.get(antData.id).targetFoodX = goToX;
       antStatusHashMap.get(antData.id).targetFoodY = goToY;

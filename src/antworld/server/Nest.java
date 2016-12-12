@@ -1,23 +1,13 @@
 package antworld.server;
 
+import antworld.common.*;
+import antworld.common.AntAction.AntActionType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-
-import antworld.common.Util;
-import antworld.common.AntAction;
-import antworld.common.AntAction.AntActionType;
-import antworld.common.AntData;
-import antworld.common.AntType;
-import antworld.common.CommData;
-import antworld.common.Constants;
-import antworld.common.FoodData;
-import antworld.common.FoodType;
-import antworld.common.NestData;
-import antworld.common.NestNameEnum;
-import antworld.common.TeamNameEnum;
 
 public class Nest extends NestData implements Serializable
 {
@@ -31,16 +21,8 @@ public class Nest extends NestData implements Serializable
   public static int INVALID_NEST_ID = -1;
 
   private int[] foodStockPile = new int[FoodType.SIZE];
-  
-  //TODO: uncomment for proper behavior
-//  {
-//    for (int i=0; i<foodStockPile.length; i++)
-//    {
-//      foodStockPile[i] = 100000;
-//    }
-//  }
 
-  private ArrayList<AntData> antList = new ArrayList<AntData>();
+  private ArrayList<AntData> antList = new ArrayList<>();
   
   private volatile long timeOfLastMessageFromClient;
   private NetworkStatus status = NetworkStatus.CONNECTED; 
@@ -113,7 +95,7 @@ public class Nest extends NestData implements Serializable
   public int[] copyFoodStockPile()
   {
     int[] copy = new int[FoodType.SIZE];
-    for (int i=0; i<FoodType.SIZE; i++)
+    for (int i=0; i< FoodType.SIZE; i++)
     { copy[i] = foodStockPile[i];
     }
     return copy;
@@ -130,6 +112,10 @@ public class Nest extends NestData implements Serializable
     for (FoodType type : FoodType.values())
     { 
       if (type != FoodType.WATER) score += foodStockPile[type.ordinal()];
+    }
+    for (AntData ant : antList)
+    {
+      if (ant.alive) score+= AntType.TOTAL_FOOD_UNITS_TO_SPAWN/2;
     }
     return score;
   }
@@ -245,7 +231,7 @@ public class Nest extends NestData implements Serializable
     for (int idx=0; idx<commData.myAntList.size(); idx++)
     {
       AntData clientAnt = commData.myAntList.get(idx);
-//      System.out.println("I got your request.");
+      
       if (clientAnt.id == Constants.UNKNOWN_ANT_ID)
       {
         if (clientAnt.myAction.type != AntActionType.BIRTH) continue;
@@ -324,7 +310,7 @@ public class Nest extends NestData implements Serializable
   {
     // sending common to client
     
-    CommData commData = new CommData(nestName, team);
+    CommData commData = new CommData(team);
     
     if (orgCommData.requestNestData)
     {
@@ -332,6 +318,7 @@ public class Nest extends NestData implements Serializable
     }
     else commData.nestData = null;
 
+    commData.myNest = nestName;
     commData.gameTick = AntWorld.getGameTick()+1;
     commData.wallClockMilliSec = world.getWallClockAtLastUpdateStart();
     commData.myAntList.clear();

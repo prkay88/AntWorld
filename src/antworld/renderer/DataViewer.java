@@ -1,25 +1,18 @@
 package antworld.renderer;
 
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-//import java.awt.Font;
-import java.awt.Insets;
-import java.util.ArrayList;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-
 import antworld.common.FoodType;
 import antworld.common.TeamNameEnum;
 import antworld.server.AntWorld;
 import antworld.server.Nest;
 import antworld.server.Nest.NetworkStatus;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.ArrayList;
+
+//import java.awt.Font;
 
 @SuppressWarnings("serial")
 public class DataViewer extends JFrame
@@ -51,7 +44,7 @@ public class DataViewer extends JFrame
     int panelHeight = outsideHeight - insets.top - insets.bottom;
     
     
-    String[] columnNames =  new String[7+FoodType.SIZE];
+    String[] columnNames =  new String[7+ FoodType.SIZE];
     columnNames[0] = "Nest";
     columnNames[1] = "Team";
     columnNames[2] = "Status";

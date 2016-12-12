@@ -9,8 +9,8 @@ public enum TeamNameEnum
   Allen_Brendan,
   Arthur_Phil,
   Atle_Caleb,
+  Connor_Rob,
   Daniel_Corey,
-  Denman_Loughrin,
   Ederin_Dominic,
   Forrest_Michael,
   Hector_Haijin,
@@ -21,9 +21,22 @@ public enum TeamNameEnum
   Kenneth_Germaine,
   Kevin_Sahba,
   Michael_Joaquin,
-  Nathan_Tran_Nicholas,
+  Nathan_Nicholas,
   Robin_Alex,
   Sam_Dominic,
   Sarah_Beatriz,
   Kim_Javier,
+  Linh_Dustin;
+
+  public static TeamNameEnum getTeamByString(String name)
+  {
+    for(TeamNameEnum team : values())
+    {
+      if( name.equals(team.name()))
+      {
+        return team;
+      }
+    }
+    return null;
+  }
 }

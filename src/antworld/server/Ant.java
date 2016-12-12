@@ -1,19 +1,11 @@
 package antworld.server;
 
+import antworld.common.*;
+import antworld.common.AntAction.AntActionType;
+
 import java.util.Random;
 
-import antworld.common.AntAction;
-import antworld.common.AntAction.AntActionType;
-import antworld.common.AntData;
-import antworld.common.AntType;
-import antworld.common.Constants;
-import antworld.common.FoodData;
-import antworld.common.FoodType;
-import antworld.common.LandType;
-import antworld.common.NestNameEnum;
-import antworld.common.TeamNameEnum;
-
-public class Ant //extends AntData
+public class Ant
 {
   public static final int INVALID_ANT_ID = -7;
   private static Random random = Constants.random;
@@ -22,13 +14,13 @@ public class Ant //extends AntData
   
   public static AntData createAnt(AntType type, NestNameEnum nestName, TeamNameEnum teamName)
   {
-    idCount++;
+    int id = getNewID();
     
-    return new AntData(idCount, type, nestName, teamName);
+    return new AntData(id, type, nestName, teamName);
   }
   
   
-  public static int restoreAntID_Hack()
+  public static synchronized int getNewID()
   {
     idCount++;
     return idCount;
@@ -217,7 +209,7 @@ public class Ant //extends AntData
       
       if (targetCell.getLandType() == LandType.WATER)
       { 
-        if ((ant.carryUnits > 0) && (ant.carryType!=FoodType.WATER)) return false;
+        if ((ant.carryUnits > 0) && (ant.carryType!= FoodType.WATER)) return false;
         ant.carryType = FoodType.WATER;
       }
       else
@@ -267,6 +259,4 @@ public class Ant //extends AntData
     if (targetCell == null) return null;
     return targetCell.getAnt();
   }
-  
-  
 }

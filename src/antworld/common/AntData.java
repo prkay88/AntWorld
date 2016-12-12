@@ -1,7 +1,9 @@
 package antworld.common;
 
-import java.io.Serializable;
 import antworld.common.AntAction.AntActionType;
+
+import java.io.Serializable;
+
 /**
  *!!!!!!!!!! DO NOT MODIFY ANYTHING IN THIS CLASS !!!!!!!!!!<br>
  * This class is serialized across a network socket. Any modifications will
@@ -134,8 +136,8 @@ public class AntData implements Comparable<AntData>, Serializable
     underground = source.underground;
   }
 
-  /* 
-   * Creates a formatted string showing many of this ant's fields.
+  /**
+   * @return a formatted string showing many of this ant's fields.
    */
   public String toString()
   {
@@ -149,13 +151,38 @@ public class AntData implements Comparable<AntData>, Serializable
     return out;
   }
 
-  /* 
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
+
+  /**
+   * @return a formatted string showing some of this ant's fields for compact
+   * display in the GUI mouse-over.
    */
+  public String toStringShort()
+  {
+    String out = nestName.toString() +"[" + id + "]: " + health + " HP ";
+    if (carryUnits > 0) out += "[" + carryType + ":" + carryUnits + "]";
+    return out;
+  }
+
   @Override
   public int compareTo(AntData otherAnt)
   {
     return id - otherAnt.id;
   }
 
+
+  @Override
+  public boolean equals(Object other)
+  {
+    if (other == this) return true;
+    if (other == null) return false;
+    if (!(other instanceof AntData))return false;
+    if (id == ((AntData)other).id) return true;
+    return false;
+  }
+
+  @Override
+  public int hashCode()
+  {
+    return id;
+  }
 }

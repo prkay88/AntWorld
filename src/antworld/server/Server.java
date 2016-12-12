@@ -1,18 +1,12 @@
 package antworld.server;
 
+import antworld.common.*;
+import antworld.server.Nest.NetworkStatus;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
-
-import antworld.common.AntData;
-import antworld.common.CommData;
-import antworld.common.Constants;
-import antworld.common.FoodData;
-import antworld.common.NestData;
-import antworld.common.NestNameEnum;
-import antworld.common.TeamNameEnum;
-import antworld.server.Nest.NetworkStatus;
 
 public class Server extends Thread
 {
@@ -46,9 +40,9 @@ public class Server extends Thread
       e.printStackTrace();
       System.exit(-1);
     }
-    System.out.println("Server: socket opened on port "+Constants.PORT);
+    System.out.println("Server: socket opened on port "+ Constants.PORT);
     
-    clientConnectionList = new ServerToClientConnection[nestList.size()]; 
+    clientConnectionList = new ServerToClientConnection[nestList.size()];
 //    for (int i=0; i<clientConnectionList.length; i++)
 //    {
 //      clientConnectionList[i] = new ServerToClientConnection(world, this, nestList.get(i)); 
@@ -113,11 +107,11 @@ public class Server extends Thread
     }
   }
   
-  public void doneEstablishingConnection(ServerToClientConnection myConnection) 
+  public void doneEstablishingConnection(ServerToClientConnection myConnection)
   { if (myConnection == connectionBeingCreated) connectionBeingCreated = null;
   }
   
-  
+  /*
   
   public int getNestIdxOfTeam(TeamNameEnum team)
   {
@@ -131,7 +125,7 @@ public class Server extends Thread
     
    return Nest.INVALID_NEST_ID; 
   }
-  
+  */
   
   
   public Nest getNest(NestNameEnum nestName)
@@ -154,62 +148,66 @@ public class Server extends Thread
   
   
   
-  public synchronized Nest requestNest(NestNameEnum nestName, ServerToClientConnection myClientListener)
+  public synchronized Nest assignNest(ServerToClientConnection myClientListener)
   {
-    int nestIdx = myClientListener.getNestName().ordinal();
     TeamNameEnum team = myClientListener.getTeamName();
-    Nest requestNest = getNest(nestName);
-    
-    if ((team == null) || (nestName == null) || (requestNest == null)) return null;
-  
-    System.out.println("Server.requestNest("+nestName+") clientConnectionList["+nestIdx+"]="+clientConnectionList[nestIdx]);
-    System.out.println("       team="+team +", requestNest.team="+requestNest.team);
-    
-    if (team == requestNest.team)
-    { 
-     
-        
-      if (requestNest.getNetworkStatus() == NetworkStatus.CONNECTED)
-      {
-        
-        closeClient(nestName);
+    if (team == null) return null;
+    Nest assignedNest = world.getNest(team);
+
+    if (assignedNest != null)
+    {
+      myClientListener.getCommData().errorMsg = "Team " + team +
+        " already has established nest: "+ assignedNest.nestName;
+      System.err.println("Server() **ERROR** " + myClientListener.getCommData().errorMsg);
+      return null;
+      //if (nest.getNetworkStatus() == NetworkStatus.CONNECTED)
+      //{
+      //  closeClient(nest.nestName);
         
        //myClientListener.getCommData().errorMsg = "Already connected: " + myClientListener.getNestName()+", team="+team;
           
         //System.err.println("Server() **ERROR** "+myClientListener.getCommData().errorMsg);
         //return null;
-      }
-        
-      //closeClient(nestName);
-      clientConnectionList[nestIdx] = myClientListener;
-      //System.out.println("Server: Reconnected to: nest="+myClientListener.getNestName()+", team="+team);
-      return requestNest;
+      //}
     }
+
       
-    if (requestNest.team != TeamNameEnum.NEARLY_BRAINLESS_BOTS)
-    {
-      myClientListener.getCommData().errorMsg = "Already connected: " + myClientListener.getNestName()+", team="+requestNest.team;
-      System.err.println("Server() **ERROR** "+myClientListener.getCommData().errorMsg);
-      return null; 
-    }
-      
-    int teamsExistingNestId = getNestIdxOfTeam(team);
+    //if (nest.team != TeamNameEnum.NEARLY_BRAINLESS_BOTS)
+    //{
+     // myClientListener.getCommData().errorMsg = "Already connected: " + myClientListener.getNestName()+", team="+requestNest.team;
+    //  System.err.println("Server() **ERROR** "+myClientListener.getCommData().errorMsg);
+    //  return null;
+   // }
+
+    //int teamsExistingNestId = getNestIdxOfTeam(team);
     //System.out.println("Server.requestNestIdx() team="+team +", teamsExistingNestId="+teamsExistingNestId);
     
-    
-    
-    if (teamsExistingNestId != Nest.INVALID_NEST_ID) 
+    int largestMinDistance = 0;
+    ArrayList<FoodSpawnSite> foodSpawnSites = world.getFoodSpawnList();
+    for (Nest nest : nestList)
     {
-      myClientListener.getCommData().errorMsg = "Team " + team + " already has established nest "+ NestNameEnum.values()[teamsExistingNestId];
-      System.err.println("Server() **ERROR** " + myClientListener.getCommData().errorMsg);
-      return null; 
+      if (nest.team != TeamNameEnum.NEARLY_BRAINLESS_BOTS) continue;
+      int minDistance = Integer.MAX_VALUE;
+      for (FoodSpawnSite spawnSite : foodSpawnSites)
+      {
+        int dx = nest.getCenterX() - spawnSite.getLocationX();
+        int dy = nest.getCenterY() - spawnSite.getLocationY();
+        int distance = Math.abs(dx) + Math.abs(dy);
+        if (distance < minDistance) minDistance = distance;
+      }
+
+      if (minDistance > largestMinDistance)
+      {
+        largestMinDistance = minDistance;
+        assignedNest = nest;
+      }
     }
-    
-    
+
+    int nestIdx = assignedNest.nestName.ordinal();
     clientConnectionList[nestIdx] = myClientListener;
-    requestNest.setTeam(team);
-    requestNest.spawnInitialAnts(world, team);
-    return requestNest;
+    assignedNest.setTeam(team);
+    assignedNest.spawnInitialAnts(world, team);
+    return assignedNest;
   }
   
 
@@ -254,9 +252,10 @@ public class Server extends Thread
   
   public static CommData deepCopyCommData(CommData source)
   {
-     CommData data = new CommData(source.myNest, source.myTeam);
-     
-     data.wallClockMilliSec = source.wallClockMilliSec; 
+     CommData data = new CommData(source.myTeam);
+
+     data.myNest = source.myNest;
+     data.wallClockMilliSec = source.wallClockMilliSec;
      data.gameTick = source.gameTick;
 
      data.password = source.password;

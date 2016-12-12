@@ -441,7 +441,7 @@ public class RandomWalkAI extends AI
         for (int j=-15; j<=15; j++)
         {
           if (antY+j < 0) continue; //illegal coordinates
-          int distanceToWater = Util.manhattanDistance(antData.gridX, antData.gridY, i,j);
+          int distanceToWater = Util.manhattanDistance(antData.gridX, antData.gridY, i, j);
           if (ClientRandomWalk.world[antX+i][antY+j].landType == LandType.WATER &&
                   distanceToWater < closestWater)
           {
@@ -685,7 +685,7 @@ public class RandomWalkAI extends AI
       {
         //food is reached, find an A* path to go home
         ClientCell antCell = ClientRandomWalk.world[antData.gridX][antData.gridY];
-        ClientCell nestCell = ClientRandomWalk.world[centerX-Constants.NEST_RADIUS][centerY];
+        ClientCell nestCell = ClientRandomWalk.world[centerX- Constants.NEST_RADIUS][centerY];
         aStarObject.setBeginAndEnd(antCell, nestCell);
         extraAntData.setPath(aStarObject.findPath());
         if (extraAntData.path.size() > 3)

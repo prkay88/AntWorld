@@ -1,14 +1,14 @@
 package antworld.server;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-
 import antworld.common.CommData;
 import antworld.common.NestNameEnum;
 import antworld.common.TeamNameEnum;
 import antworld.server.Nest.NetworkStatus;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class ServerToClientConnection extends Thread
 {
@@ -40,10 +40,6 @@ public class ServerToClientConnection extends Thread
     {
       clientReader = new ObjectInputStream(client.getInputStream());
       clientWriter = new ObjectOutputStream(client.getOutputStream());
-
-      String msg = "ServerToClientConnection.openConnectionToClient():"+myNestName+": created clientReader & clientWriter";
-      System.out.println(msg);
-      //server.log(msg);
     }
     catch (Exception e)
     {
@@ -56,19 +52,7 @@ public class ServerToClientConnection extends Thread
   
   public static long getPassword(TeamNameEnum team)
   {
-    if (team == null) return -1;
-    long a = 19682;
-    long c = 4339335;
-    long m = 1099511627776L;
-    String str = team.toString();
-    long x = str.charAt(0);
-    
-    for (int i=0; i<str.length(); i++)
-    {
-      x = ((x+str.charAt(i))*a + c) % m;
-    }
-    
-    return x;
+    return 1;
   }
   
   
@@ -95,31 +79,31 @@ public class ServerToClientConnection extends Thread
       CommData data = (CommData) clientReader.readObject();
       if (DEBUG_RECEIVE) System.out.println("ServerToClientConnection[EstablishNest]: received common="+data);
       
-      activeCommData = new CommData(data.myNest, data.myTeam);
+      activeCommData = new CommData(data.myTeam);
        
-      if ((data.myNest == null) || (data.myTeam == null))
+      if (data.myTeam == null)
       { 
-        activeCommData.errorMsg = "(common.myNest == null || (common.myTeam == null)";
+        activeCommData.errorMsg = "myTeam == null)";
         closeSocket(activeCommData.errorMsg);
         return;
       }
-      
-      if ((data.password < 0) || (data.password != getPassword(data.myTeam)))
-      {
-        System.err.println("ServerToClientConnection() Missmatch in Teamname : password="+ data.password);
-        activeCommData.errorMsg = "Missmatch in Teamname : password";
-        activeCommData.myNest = null;
-        send(activeCommData);
-        closeSocket(activeCommData.errorMsg);
-        return;
-      }
-      
-      
-      this.myNestName = data.myNest;
+
+      //Password checking since the tourney will be live
+      //if ((data.password < 0) || (data.password != getPassword(data.myTeam)))
+      //{
+      // System.err.println("ServerToClientConnection() Missmatch in Teamname : password="+ data.password);
+      //  activeCommData.errorMsg = "Missmatch in Teamname : password";
+      //  activeCommData.myNest = null;
+      //  send(activeCommData);
+      //  closeSocket(activeCommData.errorMsg);
+      //  return;
+      //}
+
       this.myTeam = data.myTeam;
       
       
-      myNest = server.requestNest(myNestName, this);
+      myNest = server.assignNest(this);
+      myNestName = myNest.nestName;
       
       if (myNest == null)
       {

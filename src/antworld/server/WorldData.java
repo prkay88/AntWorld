@@ -1,8 +1,9 @@
 package antworld.server;
 
+import antworld.common.Constants;
+
 import java.io.Serializable;
 import java.util.ArrayList;
-import antworld.common.Constants;
 
 public class WorldData implements Serializable
 {
