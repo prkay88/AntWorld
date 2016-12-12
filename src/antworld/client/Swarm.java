@@ -36,6 +36,7 @@ public class Swarm extends Thread
   private int myNestCenterX;
   private int myNestCenterY;
   private boolean goingTowardsEnemyNest;
+  private boolean foundInitialEnemyNest = false;
   private boolean havePickedEnemyNest = false;
   private boolean foundFood;
   private boolean foundEnemyAnt;
@@ -202,77 +203,108 @@ public class Swarm extends Thread
       centerY = centerY + random.nextInt(3);
     }
   }
+
+  private boolean foundSwarmTarget(int targetX, int targetY)
+  {
+    if(targetX == centerX && targetY == centerY) return true;
+    else return false;
+  }
   
   public void findEnemyNest()
   {
     int tempDistance;
-    if (SWARMID % 4 == 0)
+    if(!foundInitialEnemyNest)
     {
-      for (ClientCell clientCell : nestCenterCells)
+      if (SWARMID % 4 == 0)
       {
-        if (clientCell.x >= myNestCenterX && clientCell.y <= myNestCenterY)
+        for (ClientCell clientCell : nestCenterCells)
         {
-          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
-          if (tempDistance < distanceToEnemy)
+          if (clientCell.x >= myNestCenterX && clientCell.y <= myNestCenterY)
           {
-            distanceToEnemy = tempDistance;
-            enemyNestX = clientCell.x;
-            enemyNestY = clientCell.y;
+            tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+            if (tempDistance < distanceToEnemy)
+            {
+              distanceToEnemy = tempDistance;
+              enemyNestX = clientCell.x;
+              enemyNestY = clientCell.y;
+            }
+          }
+        }
+      }
+      else if (SWARMID % 4 == 1)
+      {
+        for (ClientCell clientCell : nestCenterCells)
+        {
+          if (clientCell.x < myNestCenterX && clientCell.y <= myNestCenterY)
+          {
+            tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+            if (tempDistance < distanceToEnemy)
+            {
+              distanceToEnemy = tempDistance;
+              enemyNestX = clientCell.x;
+              enemyNestY = clientCell.y;
+            }
+          }
+        }
+      }
+      else if (SWARMID % 4 == 2)
+      {
+        for (ClientCell clientCell : nestCenterCells)
+        {
+          if (clientCell.x < myNestCenterX && clientCell.y >= myNestCenterY)
+          {
+            tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+            if (tempDistance < distanceToEnemy)
+            {
+              distanceToEnemy = tempDistance;
+              enemyNestX = clientCell.x;
+              enemyNestY = clientCell.y;
+            }
+          }
+        }
+      }
+      else if (SWARMID % 4 == 3)
+      {
+        for (ClientCell clientCell : nestCenterCells)
+        {
+          if (clientCell.x >= myNestCenterX && clientCell.y >= myNestCenterY)
+          {
+            tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
+            if (tempDistance < distanceToEnemy)
+            {
+              distanceToEnemy = tempDistance;
+              enemyNestX = clientCell.x;
+              enemyNestY = clientCell.y;
+            }
           }
         }
       }
     }
-    else if (SWARMID % 4 == 1)
+    else
     {
-      for (ClientCell clientCell : nestCenterCells)
+      int distance = 999999;
+      int temp;
+      for(ClientCell clientCell : nestCenterCells)
       {
-        if (clientCell.x < myNestCenterX && clientCell.y <= myNestCenterY)
+        temp = Util.manhattanDistance(centerX, centerY, clientCell.x, clientCell.y);
+        if(temp < distance)
         {
-          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
-          if (tempDistance < distanceToEnemy)
-          {
-            distanceToEnemy = tempDistance;
-            enemyNestX = clientCell.x;
-            enemyNestY = clientCell.y;
-          }
+          enemyNestX = clientCell.x;
+          enemyNestY = clientCell.y;
+          distance = temp;
         }
       }
     }
-    else if (SWARMID % 4 == 2)
-    {
-      for (ClientCell clientCell : nestCenterCells)
-      {
-        if (clientCell.x < myNestCenterX && clientCell.y >= myNestCenterY)
-        {
-          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
-          if (tempDistance < distanceToEnemy)
-          {
-            distanceToEnemy = tempDistance;
-            enemyNestX = clientCell.x;
-            enemyNestY = clientCell.y;
-          }
-        }
-      }
-    }
-    else if (SWARMID % 4 == 3)
-    {
-      for (ClientCell clientCell : nestCenterCells)
-      {
-        if (clientCell.x >= myNestCenterX && clientCell.y >= myNestCenterY)
-        {
-          tempDistance = Util.manhattanDistance(myNestCenterX, myNestCenterY, clientCell.x, clientCell.y);
-          if (tempDistance < distanceToEnemy)
-          {
-            distanceToEnemy = tempDistance;
-            enemyNestX = clientCell.x;
-            enemyNestY = clientCell.y;
-          }
-        }
-      }
-    }
+
     if (enemyNestY < 999999999 && enemyNestX < 999999999) goingTowardsEnemyNest = true;
   }
-  
+
+  public boolean contains(int antId)
+  {
+    if(antIdSet.contains(antId)) return true;
+    else return false;
+  }
+
   public void moveSwarmCenterTowardsNest()
   {
     
@@ -419,8 +451,8 @@ public class Swarm extends Thread
       //System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
       
       System.out.println("goingTowardsEnemyNest=" + goingTowardsEnemyNest +
-              ", foodCount < foodUnitsToReturn="+(foodCount < foodUnitsToReturn) +
-              ", healthOfWeakestAnt > minHealthOfAnt="+(numOfHurtAnts < numOfHurtAntsThreshold));
+              ", foodCount < foodUnitsToReturn=" + (foodCount < foodUnitsToReturn) +
+              ", healthOfWeakestAnt > minHealthOfAnt=" + (numOfHurtAnts < numOfHurtAntsThreshold));
       //TODO: Add more logic to decide what action Swarm does.
       if (goingTowardsEnemyNest && foodCount < foodUnitsToReturn && numOfHurtAnts < numOfHurtAntsThreshold)
       {
@@ -439,11 +471,17 @@ public class Swarm extends Thread
         findWaterWithinRange(waterRange);
         if (goToWaterX < 999999 && goToWaterY < 999999) moveSwarmToWater();
         else moveSwarmCenterTowardsNest();
+        goingTowardsEnemyNest = false;
         
       }
       else
       {
-        moveSwarmCenterExplore();
+        if(random.nextBoolean())moveSwarmCenterExplore();
+        else
+        {
+          foundInitialEnemyNest = true;
+          findEnemyNest();
+        }
       }
       
       ticksUntilExpandSwarm--;
@@ -452,7 +490,7 @@ public class Swarm extends Thread
         if (outerRadius <= 500)
         {
           //expandSwarm(1.5);
-          ticksUntilExpandSwarm = 800;
+          ticksUntilExpandSwarm = 200;
         }
         
       }

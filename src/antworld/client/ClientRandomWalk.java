@@ -46,6 +46,8 @@ public class ClientRandomWalk
   private static Random random = Constants.random;
 
   private int numThreads = 16;
+  private int antListSize = Constants.INITIAL_ANT_SPAWN_COUNT;
+  private int swarmAssignNum =0;
   private ExecutorService executor = Executors.newFixedThreadPool(numThreads);
   private ArrayList<ArrayList<AntData>> antDataListsForThreads = new ArrayList<>();
   private ArrayList<WorkerThread> workerThreads = new ArrayList<>();
@@ -53,6 +55,7 @@ public class ClientRandomWalk
    static volatile int numThreadsReady = 0;
   public static ReadyThreadCounter readyThreadCounter = new ReadyThreadCounter();
   ArrayList<ClientCell> nestCenterCells = new ArrayList<>();
+
   
   public ClientRandomWalk(String host, int portNumber)
   {
@@ -102,7 +105,7 @@ public class ClientRandomWalk
     for(int i=0; i<4; i++)
     {
       SwarmAI swarmAI = new SwarmAI(i,commData, null);
-      Swarm swarm = new Swarm(i, centerX, centerY, 20, swarmAI, commData);
+      Swarm swarm = new Swarm(i, centerX, centerY, 50, swarmAI, commData);
       swarmAI.setMySwarm(swarm);
       swarm.setNestCenterCells(nestCenterCells);
       swarmList.add(i,swarm);
@@ -283,8 +286,23 @@ public class ClientRandomWalk
         //if(data.nestData == null) System.out.println("ClientRandomWalk: nestData is null before being sent to chooseActionOfAllAnts");
   
         //System.out.println("NumTheadsReady is: "+readyThreadCounter.numThreadsReady);
-        
-        
+
+        //TODO: check to see if server always places new ant at end/beginning of list to avoid looping
+        if(antListSize != data.myAntList.size())
+        {
+          System.out.println("Adding newly spawned ant to a list");
+          for(AntData antData : data.myAntList)
+          {
+            for(Swarm swarm : swarmList)
+            {
+              if(!swarm.contains(antData.id))
+              {
+                swarm.addAntToIDSet(antData);
+              }
+            }
+          }
+
+        }
         boolean allSwarmsReady = true;
         for (Swarm swarm : swarmList)
         {
@@ -381,7 +399,7 @@ public class ClientRandomWalk
       world[food.gridX][food.gridY].setFoodType(food.foodType);
       System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
     }
-    System.out.println("swarmList.size()="+swarmList.size());
+    System.out.println("swarmList.size()=" + swarmList.size());
 //    int runCounter = 0;
     for(Swarm swarm : swarmList)
     {
@@ -491,6 +509,7 @@ public class ClientRandomWalk
 //        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
 //        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
           commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
+          swarmAssignNum++;
           System.out.println("Spawned a new ant, new antList size=" + commData.myAntList.size());
         }
       }
