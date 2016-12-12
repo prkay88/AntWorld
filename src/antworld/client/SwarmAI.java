@@ -129,11 +129,11 @@ public class SwarmAI extends AI
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
 //    antAction.direction = Direction.WEST;
     //Changes the main direction randomly 30% of time, to try to spread out swarms a bit more
-//    if(random.nextDouble()<=.3)
-//    {
-//      antStatusHashMap.get(antData.id).updateRoamingDirection();
-//      antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
-//    }
+    if(random.nextDouble()<=.05)
+    {
+      antStatusHashMap.get(antData.id).updateRoamingDirection();
+      antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
+    }
     return true;
     //TODO: delete this:
 //    antAction.direction = Direction.WEST;
