@@ -128,14 +128,19 @@ public class SwarmAI extends AI
     //TODO: uncomment for proper behavior
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
 //    antAction.direction = Direction.WEST;
+    //Changes the main direction randomly 30% of time, to try to spread out swarms a bit more
+    if(random.nextDouble()<=.3)
+    {
+      antStatusHashMap.get(antData.id).updateRoamingDirection();
+      antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
+    }
     return true;
     //TODO: delete this:
 //    antAction.direction = Direction.WEST;
   }
   
   @Override
-  public boolean underGroundAction()
-  {
+  public boolean underGroundAction() {
     System.out.println("In underGroundAction");
     if (antData.id != Constants.UNKNOWN_ANT_ID && antData.underground)
     {
