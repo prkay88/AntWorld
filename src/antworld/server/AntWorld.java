@@ -558,6 +558,8 @@ public class AntWorld implements ActionListener
       {
         if(mapNum == 3)
         {
+          spawnX = 300;
+          spawnY = 487;
 //          spawnX = 84;
 //          spawnY = 38;
 //          spawnX = 9;

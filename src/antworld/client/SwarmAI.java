@@ -105,6 +105,7 @@ public class SwarmAI extends AI
     //checking to see if an is inside swarm. if not choosing random direction until they are.
     antAction.direction = currentDirection;
     System.out.println("in goExplore, antAction.direction = " + antAction.direction);
+    //TODO: uncomment for Phil's proper swarm behavior
     if (!mySwarm.insideOuterRadius(antData.gridX + antAction.direction.deltaX(), antData.gridY + antAction.direction.deltaY()))
     {
       antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY());
@@ -124,13 +125,9 @@ public class SwarmAI extends AI
       antStatusHashMap.get(antData.id).updateRoamingDirection();
       System.out.println("in go Explore(): roaming direction updated");
     }
+    //TODO: uncomment for proper behavior
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
-    //This should give them a random direction 30% of time. In order to spread out the swarm a bit
-    if(random.nextDouble()<=.3)
-    {
-      antStatusHashMap.get(antData.id).updateRoamingDirection();
-      antAction.direction=antStatusHashMap.get(antData.id).mainDirection;
-    }
+//    antAction.direction = Direction.WEST;
     return true;
     //TODO: delete this:
 //    antAction.direction = Direction.WEST;
@@ -316,8 +313,37 @@ public class SwarmAI extends AI
     int goToX = 0;
     int goToY = 0;
     int closestFood = 1000000;
+    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     antAction.type = AntAction.AntActionType.MOVE;
     //TODO: incorporate targetFoodX and targetFoodY
+    if (extraAntData.targetFoodX != 0 && extraAntData.targetFoodY != 0)
+    {
+      int visionRadius = antData.antType.getVisionRadius();
+      goToX = extraAntData.targetFoodX;
+      goToY = extraAntData.targetFoodY;
+      closestFood = Util.manhattanDistance(goToX, goToY, antData.gridX, antData.gridY);
+      
+      //should only check for food's visibility if it's within the vision radius
+      if (closestFood <= visionRadius)
+      {
+        boolean foodVisible = false;
+        for (FoodData foodData : commData.foodSet)
+        {
+          if (foodData.gridX == goToX && foodData.gridY == goToY)
+          {
+            foodVisible = true;
+          }
+        }
+        if (!foodVisible)
+        {
+          goToX = 0;
+          goToY = 0;
+          closestFood = 1000000;
+          antStatusHashMap.get(antData.id).targetFoodX = 0;
+          antStatusHashMap.get(antData.id).targetFoodY = 0;
+        }
+      }
+    }
     if (!commData.foodSet.isEmpty() && commData.foodSet != null)
     {
       for (FoodData food : commData.foodSet)
@@ -515,7 +541,6 @@ public class SwarmAI extends AI
     {
       return false;
     }
-    
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     
     if (extraAntData.targetAntId == -2)
@@ -532,6 +557,11 @@ public class SwarmAI extends AI
           enemyAntX = enemyAnt.gridX;
           enemyAntY = enemyAnt.gridY;
         }
+      }
+      if (enemyAntX == 0 && enemyAntY == 0)
+      {
+        antStatusHashMap.get(antData.id).targetAntId = -2; //the ant is not there anymore
+        return false;
       }
     }
     
@@ -576,9 +606,9 @@ public class SwarmAI extends AI
   }
   
   //gives a score for an enemy ant to be chosen as target, bigger = more likely to be the target
-  private int vulnerabilityScore(int hitPoints, int carryUnits)
+  private int vulnerabilityScore(int hitPoints, int carryUnits, int distance)
   {
-    return carryUnits + (20-hitPoints);
+    return carryUnits + (20-hitPoints) - distance;
   }
   
   //used in attackAdjacent()
@@ -589,10 +619,11 @@ public class SwarmAI extends AI
     if (antStatusHashMap.get(antData.id).targetAntId == -2)
     {
       //find the ant that is most vulnerable
-      int score = 0;
+      int score = -9999999;
       for (AntData enemyAnt : commData.enemyAntSet)
       {
-        int vulnerabilityScore = vulnerabilityScore(enemyAnt.health, enemyAnt.carryUnits);
+        int distance = Util.manhattanDistance(antData.gridX, antData.gridY, enemyAnt.gridX, enemyAnt.gridY);
+        int vulnerabilityScore = vulnerabilityScore(enemyAnt.health, enemyAnt.carryUnits, distance);
         if (vulnerabilityScore >= score)
         {
           score = vulnerabilityScore;
