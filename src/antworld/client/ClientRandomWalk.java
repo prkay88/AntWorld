@@ -29,7 +29,7 @@ public class ClientRandomWalk
 //  private NestNameEnum myNestName = NestNameEnum.ARMY;
   private int centerX, centerY;
   public static int mapWidth, mapHeight;
-  public int scoreToAntRatio = 100;
+  public int scoreToAntRatio = 1;
   
   //cell class in client, not sure if we can use the one in server package
   static ClientCell[][] world; //contains all the land types of the map being used
@@ -267,6 +267,7 @@ public class ClientRandomWalk
       mapName = "MediumMap1.PNG";
 //      mapName = "SmallMap1.png";
     }
+    //mapName = "AntWorld.png";
     BufferedImage map = Util.loadImage(mapName, null);
 //    BufferedImage map = Util.loadImage("TestReadMap.png", null);
     System.out.println("Is map null? map="+map);

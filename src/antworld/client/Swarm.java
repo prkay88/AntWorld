@@ -46,6 +46,7 @@ public class Swarm extends Thread
   private int goToWaterX = 999999;
   private int goToWaterY = 999999;
   private int waterRange = 100;
+  private final int MAXEXPLOREDISTANCE = 1200;
   
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
@@ -456,8 +457,10 @@ public class Swarm extends Thread
       //TODO: Add more logic to decide what action Swarm does.
       if (goingTowardsEnemyNest && foodCount < foodUnitsToReturn && numOfHurtAnts < numOfHurtAntsThreshold)
       {
-        System.out.println("inside Swarm's run() going to move the swarm center");
-        moveTowardsEnemyNest();
+        //System.out.println("inside Swarm's run() going to move the swarm center");
+        if(!foundSwarmTarget(enemyNestX, enemyNestY)) moveTowardsEnemyNest();
+        else goingTowardsEnemyNest = false;
+
       }
       
       else if (foodCount >= foodUnitsToReturn)
@@ -473,6 +476,11 @@ public class Swarm extends Thread
         else moveSwarmCenterTowardsNest();
         goingTowardsEnemyNest = false;
         
+      }
+      else if(Util.manhattanDistance(centerX,centerY,myNestCenterX, myNestCenterY) >= MAXEXPLOREDISTANCE)
+      {
+        moveSwarmCenterTowardsNest();
+        goingTowardsEnemyNest = false;
       }
       else
       {

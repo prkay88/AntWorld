@@ -125,6 +125,12 @@ public class SwarmAI extends AI
       System.out.println("in go Explore(): roaming direction updated");
     }
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
+    //This should give them a random direction 30% of time. In order to spread out the swarm a bit
+    if(random.nextDouble()<=.3)
+    {
+      antStatusHashMap.get(antData.id).updateRoamingDirection();
+      antAction.direction=antStatusHashMap.get(antData.id).mainDirection;
+    }
     return true;
     //TODO: delete this:
 //    antAction.direction = Direction.WEST;
