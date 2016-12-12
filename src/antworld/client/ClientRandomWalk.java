@@ -50,7 +50,8 @@ public class ClientRandomWalk
   static volatile int numThreadsReady = 0;
   public static ReadyThreadCounter readyThreadCounter = new ReadyThreadCounter();
   ArrayList<ClientCell> nestCenterCells = new ArrayList<>();
-
+  volatile boolean mapIsRead = false;
+  
   public ClientRandomWalk(String host, int portNumber, TeamNameEnum team)
   {
     myTeam = team;
@@ -63,10 +64,11 @@ public class ClientRandomWalk
     testAI = new RandomWalkAI(data, null, myNestName);
     testAI.setCenterX(centerX);
     testAI.setCenterY(centerY);
-    createMap();
+    (new WorkerThread(this)).start(); // will build the map
+//    createMap();
     initializeAntDataLists();
     assignAntsToWorkerThreads(data);
-    initiailizeWorkerThreadList();
+//    initiailizeWorkerThreadList();
     initializeSwarms(data);
     assignAntsToSwarm(data);
     mainGameLoop(data);
@@ -95,15 +97,15 @@ public class ClientRandomWalk
     }
 //    System.exit(1);
   }
-  private void initiailizeWorkerThreadList()
-  {
-    for(int i=0; i<numThreads; i++)
-    {
-      //WorkerThread workerThread = new WorkerThread(null, null);
-      WorkerThread workerThread = new WorkerThread(testAI);
-      workerThreads.add(workerThread);
-    }
-  }
+//  private void initiailizeWorkerThreadList()
+//  {
+//    for(int i=0; i<numThreads; i++)
+//    {
+//      //WorkerThread workerThread = new WorkerThread(null, null);
+//      WorkerThread workerThread = new WorkerThread(testAI);
+//      workerThreads.add(workerThread);
+//    }
+//  }
   private void assignAntsToWorkerThreads(CommData commData)
   {
     int count = 0;
@@ -187,7 +189,7 @@ public class ClientRandomWalk
   }
 
 
-  private void createMap()
+  public void createMap()
   {
     String mapName = "AntWorld.png";
 //    if (debug)
@@ -356,7 +358,30 @@ public class ClientRandomWalk
       testAI.setCommData(data);
       try
       {
-
+        
+        if (!mapIsRead)
+        {
+          CommData sendData = data.packageForSendToServer();
+          outputStream.writeObject(sendData);
+          outputStream.flush();
+          outputStream.reset();
+          if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
+          CommData receivedData = (CommData) inputStream.readObject();
+          if (DEBUG)
+            System.out.println("ClientRandomWalk: received <<<<<<<<<" + inputStream.available() + "<...\n" + receivedData);
+          data = receivedData;
+  
+          if ((myNestName == null) || (data.myTeam != myTeam))
+          {
+            System.err.println("ClientRandomWalk: !!!!ERROR!!!! " + myNestName);
+          }
+          continue;
+        }
+        
+//        if (mapIsRead)
+//        {
+//          System.exit(1);
+//        }
         //TODO: check to see if server always places new ant at end/beginning of list to avoid looping
         if(antListSize != data.myAntList.size())
         {
@@ -512,7 +537,7 @@ public class ClientRandomWalk
     String serverHost = "localhost";
     if (args.length > 0) serverHost = args[args.length -1];
 
-    TeamNameEnum team = TeamNameEnum.RANDOM_WALKERS;
+    TeamNameEnum team = TeamNameEnum.Arthur_Phil;
     if (args.length > 1)
     { team = TeamNameEnum.getTeamByString(args[0]);
     }

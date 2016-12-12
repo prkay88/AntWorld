@@ -7,24 +7,18 @@ import antworld.common.CommData;
  */
 public class WorkerThread extends Thread
 {
-  CommData commData;
-  RandomWalkAI testAI;
+  ClientRandomWalk clientRandomWalk;
   
-  public WorkerThread(RandomWalkAI testAI)
+  public WorkerThread(ClientRandomWalk client)
   {
-    this.testAI = testAI;
+    clientRandomWalk = client;
   }
   
   
   @Override
   public void run()
   {
-      
+    clientRandomWalk.createMap();
+    clientRandomWalk.mapIsRead = true;
   }
-  
-  public void setCommData(CommData commData)
-  {
-    this.commData = commData;
-  }
-  
 }
