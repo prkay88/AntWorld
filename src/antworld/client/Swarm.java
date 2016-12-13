@@ -6,6 +6,7 @@ import antworld.common.LandType;
 import antworld.common.Util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -28,6 +29,7 @@ public class Swarm extends Thread
   private Random random = new Random();
   public boolean turnFinished = false;
   public boolean executing = false;
+  public HashMap<Integer, Integer> swarmLocationMap = new HashMap<>();
   
   private int ticksUntilMoveSwarm = 20;
   private int ticksUntilExpandSwarm = 30;
@@ -49,6 +51,9 @@ public class Swarm extends Thread
   private int goToWaterY = 999999;
   private int waterRange = 100;
   private final int MAXEXPLOREDISTANCE = 1200;
+  private long count =0;
+  private int timeCenterOverWater =0;
+
   
   //Could have an AI/CommData here and then in the Client we just iterate through Swarms
   //Also could have a worker thread here too.
@@ -159,14 +164,15 @@ public class Swarm extends Thread
   public boolean insideMiddleRadius(int x, int y)
   {
     int distanceToCenter = Util.manhattanDistance(x, y, centerX, centerY);
-    if (distanceToCenter > middleRadius) return false;
+
+    if (distanceToCenter > innerRadius && distanceToCenter< outerRadius) return false;
     else return true;
   }
   
   public boolean insideOuterRadius(int x, int y)
   {
     int distanceToCenter = Util.manhattanDistance(x, y, centerX, centerY);
-    if (distanceToCenter > outerRadius) return false;
+    if (distanceToCenter < outerRadius && distanceToCenter >middleRadius) return false;
     else return true;
   }
   
@@ -422,6 +428,8 @@ public class Swarm extends Thread
   public void run()
   {
     //System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY + ")");
+    count++;
+    System.out.println("count is: "+count);
     int foodCount = 0;
     int healthOfWeakestAnt = 20;
     int numOfHurtAnts = 0;
@@ -450,6 +458,7 @@ public class Swarm extends Thread
         }
         
       }
+      System.out.println("Swarm: "+SWARMID+ " is going to enemyNestX: "+enemyNestX+" enemyNestY: "+enemyNestY);
       ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
       //System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
       
@@ -460,14 +469,14 @@ public class Swarm extends Thread
       if (goingTowardsEnemyNest && foodCount < foodUnitsToReturn && numOfHurtAnts < numOfHurtAntsThreshold)
       {
         //System.out.println("inside Swarm's run() going to move the swarm center");
-        if(!foundSwarmTarget(enemyNestX, enemyNestY)) moveTowardsEnemyNest();
-        else goingTowardsEnemyNest = false;
+        if(!foundSwarmTarget(enemyNestX, enemyNestY) && count%3 ==0) moveTowardsEnemyNest();
+        else if(foundSwarmTarget(enemyNestX, enemyNestY)) goingTowardsEnemyNest = false;
 
       }
       
       else if (foodCount >= foodUnitsToReturn)
       {
-        moveSwarmCenterTowardsNest();
+        if(count%3 ==0)moveSwarmCenterTowardsNest();
         goingTowardsEnemyNest = false;
       }
 //      else if (healthOfWeakestAnt <= minHealthOfAnt)
@@ -475,13 +484,13 @@ public class Swarm extends Thread
       {
         findWaterWithinRange(waterRange);
         if (goToWaterX < 999999 && goToWaterY < 999999) moveSwarmToWater();
-        else moveSwarmCenterTowardsNest();
+        else if(count%3 ==0) moveSwarmCenterTowardsNest();
         goingTowardsEnemyNest = false;
         
       }
       else if(Util.manhattanDistance(centerX, centerY, myNestCenterX, myNestCenterY) >= MAXEXPLOREDISTANCE)
       {
-        moveSwarmCenterTowardsNest();
+         if(count%3==0)moveSwarmCenterTowardsNest();
         goingTowardsEnemyNest = false;
       }
       else
@@ -489,7 +498,7 @@ public class Swarm extends Thread
         if(random.nextBoolean())moveSwarmCenterExplore();
         else
         {
-          foundInitialEnemyNest = true;
+          if(count >= 200)foundInitialEnemyNest = true;
           findEnemyNest();
         }
       }
@@ -503,6 +512,15 @@ public class Swarm extends Thread
           ticksUntilExpandSwarm = 200;
         }
         
+      }
+      if(ClientRandomWalk.world[centerX][centerY].landType == LandType.WATER) timeCenterOverWater++;
+      if(timeCenterOverWater >= 5)
+      {
+        System.out.println("Swarm Center over water for 5+ turns");
+        System.out.println("Swarm:"+SWARMID+ " centerX: "+centerX+ " centerY: "+centerY);
+        nestCenterCells.get(random.nextInt(nestCenterCells.size()));
+        timeCenterOverWater = 0;
+        System.out.println("Swarm: "+SWARMID+ " centerX: "+centerX+ " centerY: "+centerY);
       }
       turnFinished = true;
     }

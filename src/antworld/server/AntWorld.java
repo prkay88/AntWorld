@@ -535,7 +535,7 @@ public class AntWorld implements ActionListener
       lastRestoreTime = wallClock;
     }
   }
-  
+
   private void createFoodSpawnSite()
   {
     int totalSitesToSpawn = 3 + random.nextInt(3);
@@ -545,7 +545,7 @@ public class AntWorld implements ActionListener
       int spawnX = random.nextInt(xRange);
       spawnX = spawnX + (totalSitesToSpawn-1)*xRange;
       int spawnY = random.nextInt(worldHeight);
-      
+
       if (world[spawnX][spawnY].getLandType() == LandType.GRASS)
       {
         FoodType foodType;
