@@ -421,7 +421,7 @@ public class Swarm extends Thread
   @Override
   public void run()
   {
-    System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY + ")");
+    //System.out.println("Starting Swarm Number: " + SWARMID + "center is at: (" + centerX + ", " + centerY + ")");
     int foodCount = 0;
     int healthOfWeakestAnt = 20;
     int numOfHurtAnts = 0;
@@ -453,9 +453,9 @@ public class Swarm extends Thread
       ClientRandomWalk.readyThreadCounter.incrementNumThreadsReady();
       //System.out.println(" Swarm Number: " + SWARMID+ " finshed choosing action");
       
-      System.out.println("goingTowardsEnemyNest=" + goingTowardsEnemyNest +
-              ", foodCount < foodUnitsToReturn=" + (foodCount < foodUnitsToReturn) +
-              ", healthOfWeakestAnt > minHealthOfAnt=" + (numOfHurtAnts < numOfHurtAntsThreshold));
+//      System.out.println("goingTowardsEnemyNest=" + goingTowardsEnemyNest +
+//              ", foodCount < foodUnitsToReturn=" + (foodCount < foodUnitsToReturn) +
+//              ", healthOfWeakestAnt > minHealthOfAnt=" + (numOfHurtAnts < numOfHurtAntsThreshold));
       //TODO: Add more logic to decide what action Swarm does.
       if (goingTowardsEnemyNest && foodCount < foodUnitsToReturn && numOfHurtAnts < numOfHurtAntsThreshold)
       {

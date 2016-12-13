@@ -41,7 +41,7 @@ public class SwarmAI extends AI
     //Problem: Need to not tell the ants to move to a cell with food in it!
 //        AntAction antAction = new AntAction(AntAction.AntActionType.MOVE);
     //ask commData if there is an ant at the position i'm looking to go to.
-    System.out.println("In RWAI choosDirection()");
+    //System.out.println("In RWAI choosDirection()");
     if (startX > goalX && startY > goalY && !positionTaken(startX - 1, startY - 1))
     {
       antAction.direction = Direction.NORTHWEST;
@@ -94,7 +94,7 @@ public class SwarmAI extends AI
     antAction.type = AntAction.AntActionType.MOVE;
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     Direction currentDirection = extraAntData.mainDirection;
-    System.out.println("In goExplore():");
+    //System.out.println("In goExplore():");
     //TODO: uncomment for A*
 //    System.out.println("In goExplore(), ticksTillNextUpdate=" + extraAntData.ticksTillUpdate);
 //    if (extraAntData.ticksTillUpdate == 0 ||
@@ -104,12 +104,12 @@ public class SwarmAI extends AI
 //    }
     //checking to see if an is inside swarm. if not choosing random direction until they are.
     antAction.direction = currentDirection;
-    System.out.println("in goExplore, antAction.direction = " + antAction.direction);
+    //System.out.println("in goExplore, antAction.direction = " + antAction.direction);
     //TODO: uncomment for Phil's proper swarm behavior
     if (!mySwarm.insideOuterRadius(antData.gridX + antAction.direction.deltaX(), antData.gridY + antAction.direction.deltaY()))
     {
       antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY());
-      System.out.println("In goExplore(): the ant is not inside the outerRadius");
+      //System.out.println("In goExplore(): the ant is not inside the outerRadius");
       antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
       return true;
     }
@@ -119,11 +119,11 @@ public class SwarmAI extends AI
 //      extraAntData.ticksTillUpdate--;
 //    }
     //if position taken for the main direction change the antId's ExtraAntData's mainDirection field
-    System.out.println("In goExplore(): current ant direction is " + currentDirection);
+    //System.out.println("In goExplore(): current ant direction is " + currentDirection);
     if (positionTaken(antData.gridX+currentDirection.deltaX(), antData.gridY+currentDirection.deltaY()))
     {
       antStatusHashMap.get(antData.id).updateRoamingDirection();
-      System.out.println("in go Explore(): roaming direction updated");
+      //System.out.println("in go Explore(): roaming direction updated");
     }
     //TODO: uncomment for proper behavior
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
@@ -141,7 +141,7 @@ public class SwarmAI extends AI
   
   @Override
   public boolean underGroundAction() {
-    System.out.println("In underGroundAction");
+    //System.out.println("In underGroundAction");
     if (antData.id != Constants.UNKNOWN_ANT_ID && antData.underground)
     {
       if (antData.health >= healthThreshold)
@@ -170,8 +170,8 @@ public class SwarmAI extends AI
           antAction.x = random.nextInt((centerX + (Constants.NEST_RADIUS - 1) - centerX) + 1) + centerX;
           antAction.y = random.nextInt(((centerY + Constants.NEST_RADIUS - 1) - centerY) + 1) + centerY;
         }
-        System.out.println("CenterX: " + centerX + " CenterY: " + centerY);
-        System.out.println("SWARMID: " + SWARMID + " antAction.x: " + antAction.x + " antAction.y: " + antAction.y);
+        //System.out.println("CenterX: " + centerX + " CenterY: " + centerY);
+        //System.out.println("SWARMID: " + SWARMID + " antAction.x: " + antAction.x + " antAction.y: " + antAction.y);
 
 //        antAction.x = centerX - 9;
 //        antAction.y = centerY;
@@ -190,7 +190,7 @@ public class SwarmAI extends AI
   @Override
   public boolean pickUpFoodAdjacent()
   {
-    System.out.println("in pickUpFoodAdjacent");
+    //System.out.println("in pickUpFoodAdjacent");
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
     //right now its not picking up food unless target food cell is not null
     int antX = antData.gridX;
@@ -284,7 +284,7 @@ public class SwarmAI extends AI
   @Override
   public boolean goHomeIfCarryingOrHurt()
   {
-    System.out.println("in goHomeIfCarryingOrHurt()");
+    //System.out.println("in goHomeIfCarryingOrHurt()");
     if (antData.carryUnits >=  15)
     {
       antAction = chooseDirection(antData.gridX, antData.gridY, centerX, centerY);
@@ -314,7 +314,7 @@ public class SwarmAI extends AI
   @Override
   public boolean goToFood()
   {
-    System.out.println("in goToFood()" + "foodSet size: " + commData.foodSet.size());
+    //System.out.println("in goToFood()" + "foodSet size: " + commData.foodSet.size());
     int goToX = 0;
     int goToY = 0;
     int closestFood = 1000000;
@@ -418,7 +418,7 @@ public class SwarmAI extends AI
       LandType typeAtCoordinates = ClientRandomWalk.world[gridX][gridY].landType;
       if (antData.gridX == gridX && antData.gridY == gridY || typeAtCoordinates == LandType.WATER)
       {
-        System.out.println("Ant in the position: " + antData);
+        //System.out.println("Ant in the position: " + antData);
         return true;
       }
     }
@@ -436,7 +436,7 @@ public class SwarmAI extends AI
   @Override
   public boolean goToWater()
   {
-    System.out.println("In goToWater()");
+    //System.out.println("In goToWater()");
     if (commData.foodStockPile[FoodType.WATER.ordinal()] < 100)
     {
       int antX = antData.gridX;
@@ -477,7 +477,7 @@ public class SwarmAI extends AI
   @Override
   public boolean pickUpWater()
   {
-    System.out.println("in pickUpWater()");
+    //System.out.println("in pickUpWater()");
     //x=65, y=140 is the coordinates of one of the water patches in SmallMap3.png
     int antX = antData.gridX;
     int antY = antData.gridY;
@@ -489,7 +489,7 @@ public class SwarmAI extends AI
     {
       if (world[antX][antY - 1].landType == LandType.WATER)
       {
-        System.out.println("antX=" + antX + ", antY=" + antY + ", world[antX][antY-1]=" + world[antX][antY - 1].landType);
+        //System.out.println("antX=" + antX + ", antY=" + antY + ", world[antX][antY-1]=" + world[antX][antY - 1].landType);
         antAction.direction = Direction.NORTH;
       }
       else if (world[antX][antY + 1].landType == LandType.WATER)
@@ -530,7 +530,7 @@ public class SwarmAI extends AI
       return false;
     }
     antAction.type = AntAction.AntActionType.PICKUP;
-    System.out.println("Ant with id=" + antData.id + " found water and will pick it up.");
+    //System.out.println("Ant with id=" + antData.id + " found water and will pick it up.");
     return true;
   }
   
@@ -538,7 +538,7 @@ public class SwarmAI extends AI
   @Override
   public boolean attackAdjacent()
   {
-    System.out.println("in attackAdjacent()");
+    //System.out.println("in attackAdjacent()");
     int antX = antData.gridX;
     int antY = antData.gridY;
     int enemyAntX = 0;
@@ -634,7 +634,7 @@ public class SwarmAI extends AI
         if (vulnerabilityScore >= score)
         {
           score = vulnerabilityScore;
-          System.out.println("enemy antId being checked="+ enemyAnt.id);
+          //System.out.println("enemy antId being checked="+ enemyAnt.id);
           antStatusHashMap.get(antData.id).targetAntId = enemyAnt.id;
           enemyAntX = enemyAnt.gridX;
           enemyAntY = enemyAnt.gridY;
@@ -649,7 +649,7 @@ public class SwarmAI extends AI
   public boolean withinAggro(int myAntX, int myAntY,
                              int enemyAntX, int enemyAntY)
   {
-    System.out.println("in goToEnemyAnt()");
+    //System.out.println("in goToEnemyAnt()");
     if (Util.manhattanDistance(myAntX, myAntY, enemyAntX, enemyAntY) <= aggroRadius)
     {
       return true;
@@ -681,7 +681,7 @@ public class SwarmAI extends AI
     //this means that the targetAntId = -2
     if (!targetAntVisible)
     {
-      System.out.println("in goToEnemyAnt, targetAnt is not visible");
+      //System.out.println("in goToEnemyAnt, targetAnt is not visible");
       antStatusHashMap.get(antData.id).targetAntId = -2; //-2 is the default since -1 is for birthed ants
       
       Point targetAntCoord = setTargetAnt(); //Now it's default, set the target ant coords
@@ -711,6 +711,7 @@ public class SwarmAI extends AI
     //so that the newly spawned ants from client random walk will not have to ChooseAction
     if (antData.id == Constants.UNKNOWN_ANT_ID)
     {
+      System.out.println("AntID: "+antData.id+ " returned because ANTID equals unkown ID");
       return antAction;
     }
     //because hashMap overwrites existing values!
@@ -720,7 +721,7 @@ public class SwarmAI extends AI
       antStatusHashMap.put(antData.id, new ExtraAntData(Direction.getRandomDir()));
     }
     ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
-    System.out.println("in chooseAction's extraAntData, target food is at: ("+extraAntData.targetFoodX +", " + extraAntData.targetFoodY+")");
+    //System.out.println("in chooseAction's extraAntData, target food is at: ("+extraAntData.targetFoodX +", " + extraAntData.targetFoodY+")");
     //TODO: uncomment for A* behavior
 //    if (extraAntData != null && extraAntData.targetfoodCell != null)
 //    {
@@ -743,7 +744,11 @@ public class SwarmAI extends AI
 //    }
     
     antAction = new AntAction(AntAction.AntActionType.STASIS);
-    if (antData.ticksUntilNextAction > 0) return this.antAction;
+    if (antData.ticksUntilNextAction > 0)
+    {
+      System.out.println("ANTID: "+ antData.id+ " returned because ticksTillNextAction is greater than 0");
+      return this.antAction;
+    }
 
     //TODO: uncomment for A* behavior
 //    ExtraAntData extraAntData = antStatusHashMap.get(antData.id);
@@ -812,26 +817,59 @@ public class SwarmAI extends AI
 //      }
 //    }
   
-    if (goHomeIfCarryingOrHurt()) return this.antAction; //must come before goToFood() or goToWater()
+    if (goHomeIfCarryingOrHurt())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in goHomeIfCarryOrHurt");
+      return this.antAction; //must come before goToFood() or goToWater()
+    }
     
-    if (underGroundAction()) return this.antAction; //always exit nest first
+    if (underGroundAction())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in underGroundAction");
+      return this.antAction; //always exit nest first
+    }
+    if (pickUpFoodAdjacent())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in pickUpFoodAdjacent");
+      return this.antAction;
+    }
+    if (attackAdjacent())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in attackAdjacent");
+      return this.antAction;
+    }
     
-    if (pickUpFoodAdjacent()) return this.antAction;
-  
-    if (attackAdjacent()) return this.antAction;
-    
-    if (goToEnemyAnt()) return this.antAction; //always attack when sees an ant
-    
-    if (goToFood()) return this.antAction;
-    
-    if (pickUpWater()) return this.antAction;
-    
-    if (goToWater()) return this.antAction;
-    
-    if (goExplore()) return this.antAction;
-    
-    if (goToGoodAnt()) return this.antAction;
-    
+    if (goToEnemyAnt())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in goToEnemyAnt");
+      return this.antAction; //always attack when sees an ant
+    }
+    if (goToFood())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in goToFood");
+      return this.antAction;
+    }
+    if (pickUpWater())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in pickUpWater");
+      return this.antAction;
+    }
+    if (goToWater())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in goToWater");
+      return this.antAction;
+    }
+    if (goExplore())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in goExplore");
+      return this.antAction;
+    }
+    if (goToGoodAnt())
+    {
+      System.out.println("AntID: "+antData.id+" choose action in goToGoodAnt");
+      return this.antAction;
+    }
+    System.out.println("AntID: "+antData.id+" choose action in none of the methods");
     return this.antAction;
   }
   
