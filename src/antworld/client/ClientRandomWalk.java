@@ -9,10 +9,13 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * This class contains all the methods to connect to the server and to
+ * control the ants in the application.
+ */
 public class ClientRandomWalk
 {
   private static final boolean DEBUG = true;
@@ -23,104 +26,80 @@ public class ClientRandomWalk
   private boolean isConnected = false;
   private NestNameEnum myNestName = null;
   private int centerX, centerY;
-
+  
   public static int mapWidth, mapHeight;
   public int scoreToAntRatio = 1;
-
+  
   static ClientCell[][] world; //contains all the land types of the map being used
-
-  private RandomWalkAI testAI;
-
-
+  
   private Socket clientSocket;
-
-
-  //A random number generator is created in Constants. Use it.
-  //Do not create a new generator every time you want a random number nor
-  //  even in every class were you want a generator.
-  private static Random random = Constants.random;
-
+  
   private int numThreads = 16;
   private int antListSize = Constants.INITIAL_ANT_SPAWN_COUNT;
-  private int swarmAssignNum =0;
+  private int swarmAssignNum = 0;
   private ExecutorService executor = Executors.newFixedThreadPool(numThreads);
   private ArrayList<ArrayList<AntData>> antDataListsForThreads = new ArrayList<>();
   private ArrayList<WorkerThread> workerThreads = new ArrayList<>();
   private ArrayList<Swarm> swarmList = new ArrayList<>();
-  static volatile int numThreadsReady = 0;
-  public static ReadyThreadCounter readyThreadCounter = new ReadyThreadCounter();
   ArrayList<ClientCell> nestCenterCells = new ArrayList<>();
   volatile boolean mapIsRead = false;
   
+  /**
+   * Contains the code to connect to the server and intialize game values.
+   *
+   * @param host
+   * @param portNumber
+   * @param team
+   */
   public ClientRandomWalk(String host, int portNumber, TeamNameEnum team)
   {
     myTeam = team;
-    System.out.println("Starting " + team +" on " + host + ":" + portNumber + " at "
-      + System.currentTimeMillis());
-
+    System.out.println("Starting " + team + " on " + host + ":" + portNumber + " at "
+            + System.currentTimeMillis());
+    
     isConnected = openConnection(host, portNumber);
     if (!isConnected) System.exit(0);
     CommData data = obtainNest();
-    testAI = new RandomWalkAI(data, null, myNestName);
-    testAI.setCenterX(centerX);
-    testAI.setCenterY(centerY);
     (new WorkerThread(this)).start(); // will build the map
-//    createMap();
     initializeAntDataLists();
     assignAntsToWorkerThreads(data);
-//    initiailizeWorkerThreadList();
     initializeSwarms(data);
     assignAntsToSwarm(data);
     mainGameLoop(data);
     closeAll();
   }
-  boolean debug = false;
+  
   private void assignAntsToSwarm(CommData commData)
   {
     int swarmNum;
-    int count=0;
-    for(AntData antData : commData.myAntList)
+    for (AntData antData : commData.myAntList)
     {
-
       swarmNum = antData.id % 4;
       swarmList.get(swarmNum).addAntToIDSet(antData);
-      if(count <5) swarmList.get(swarmNum).swarmLocationMap.put(antData.id, 0);
-      if(count >=5 && count <12) swarmList.get(swarmNum).swarmLocationMap.put(antData.id, 1);
-      if(count >=12) swarmList.get(swarmNum).swarmLocationMap.put(antData.id, 2);
-      count++;
     }
   }
-
+  
   private void initializeSwarms(CommData commData)
   {
-    for(int i=0; i<4; i++)
+    for (int i = 0; i < 4; i++)
     {
-      SwarmAI swarmAI = new SwarmAI(i,commData, null);
+      SwarmAI swarmAI = new SwarmAI(i, commData, null);
       Swarm swarm = new Swarm(i, centerX, centerY, 50, swarmAI, commData);
       swarmAI.setMySwarm(swarm);
       swarm.setNestCenterCells(nestCenterCells);
-      swarmList.add(i,swarm);
+      swarmList.add(i, swarm);
     }
-//    System.exit(1);
   }
-//  private void initiailizeWorkerThreadList()
-//  {
-//    for(int i=0; i<numThreads; i++)
-//    {
-//      //WorkerThread workerThread = new WorkerThread(null, null);
-//      WorkerThread workerThread = new WorkerThread(testAI);
-//      workerThreads.add(workerThread);
-//    }
-//  }
+  
   private void assignAntsToWorkerThreads(CommData commData)
   {
     int count = 0;
-    int index =0;
-    int step = commData.myAntList.size()/4;
-
-    for( AntData antData : commData.myAntList)
+    int index = 0;
+    int step = commData.myAntList.size() / 4;
+    
+    for (AntData antData : commData.myAntList)
     {
-      if(count == step)
+      if (count == step)
       {
         index++;
         count = 0;
@@ -128,19 +107,23 @@ public class ClientRandomWalk
       antDataListsForThreads.get(index).add(antData);
       count++;
     }
-
   }
-
-
+  
+  
   private void initializeAntDataLists()
   {
-    for(int i=0; i<numThreads; i++)
+    for (int i = 0; i < numThreads; i++)
     {
       ArrayList<AntData> antDataList = new ArrayList<>();
       antDataListsForThreads.add(i, antDataList);
     }
   }
-
+  
+  /**
+   * Reads the map to be used in the application to help with the decision tree.
+   *
+   * @param map - A .png file to be used as map for the application
+   */
   public void readMap(BufferedImage map)
   {
     int mapWidth = map.getWidth();
@@ -148,10 +131,10 @@ public class ClientRandomWalk
     this.mapHeight = mapHeight;
     this.mapWidth = mapWidth;
     world = new ClientCell[mapWidth][mapHeight];
-
-    for(int y=0; y<mapHeight; y++)
+    
+    for (int y = 0; y < mapHeight; y++)
     {
-      for(int x=0; x<mapWidth; x++)
+      for (int x = 0; x < mapWidth; x++)
       {
         int rgb = (map.getRGB(x, y) & 0x00FFFFFF);
         LandType landType = LandType.GRASS;
@@ -183,70 +166,55 @@ public class ClientRandomWalk
         }
       }
     }
-
-//    for (int x=0; x < this.mapWidth; x++)
-//    {
-//      for (int y=0; y < this.mapHeight; y++)
-//      {
-////        System.out.println("In ClientRandomWalk finding neighbors of: ("+x+", "+y+")");
-//        world[x][y].findNeighbors();
-//      }
-//    }
   }
   
-  
+  /**
+   * Helps with reading the map in readMap()
+   */
   public void createMap()
   {
-    String mapName = "MediumMap1.png";
-//    if (debug)
-//    {
-//      mapName = "MediumMap1.PNG";
-////      mapName = "SmallMap1.png";
-//    }
-    mapName = "AntWorld.png";
+    String mapName = "AntWorld.png";
     BufferedImage map = Util.loadImage(mapName, null);
-//    BufferedImage map = Util.loadImage("TestReadMap.png", null);
-    System.out.println("Is map null? map=" + map);
     readMap(map);
+    
   }
-
-
+  
   private boolean openConnection(String host, int portNumber)
   {
     try
     {
       clientSocket = new Socket(host, portNumber);
-    }
-    catch (UnknownHostException e)
+    } catch (UnknownHostException e)
     {
       System.err.println("ClientRandomWalk Error: Unknown Host " + host);
       e.printStackTrace();
       return false;
-    }
-    catch (IOException e)
+    } catch (IOException e)
     {
       System.err.println("ClientRandomWalk Error: Could not open connection to " + host + " on port " + portNumber);
       e.printStackTrace();
       return false;
     }
-
+    
     try
     {
       outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
       inputStream = new ObjectInputStream(clientSocket.getInputStream());
-
-    }
-    catch (IOException e)
+      
+    } catch (IOException e)
     {
       System.err.println("ClientRandomWalk Error: Could not open i/o streams");
       e.printStackTrace();
       return false;
     }
-
+    
     return true;
-
+    
   }
-
+  
+  /**
+   * Close all resources not needed.
+   */
   public void closeAll()
   {
     System.out.println("ClientRandomWalk.closeAll()");
@@ -256,18 +224,18 @@ public class ClientRandomWalk
         if (outputStream != null) outputStream.close();
         if (inputStream != null) inputStream.close();
         clientSocket.close();
-      }
-      catch (IOException e)
+      } catch (IOException e)
       {
         System.err.println("ClientRandomWalk Error: Could not close");
         e.printStackTrace();
       }
     }
   }
-
+  
   /**
    * This method is called ONCE after the socket has been opened.
    * The server assigns a nest to this client with an initial ant population.
+   *
    * @return a reusable CommData structure populated by the server.
    */
   public CommData obtainNest()
@@ -301,7 +269,7 @@ public class ClientRandomWalk
     }
     if (data.myTeam != myTeam)
     {
-      System.err.println("ClientRandomWalk***ERROR***: Server returned wrong team name: "+data.myTeam);
+      System.err.println("ClientRandomWalk***ERROR***: Server returned wrong team name: " + data.myTeam);
       System.exit(0);
     }
     if (data.myNest == null)
@@ -309,61 +277,59 @@ public class ClientRandomWalk
       System.err.println("ClientRandomWalk***ERROR***: Server returned NULL nest");
       System.exit(0);
     }
-
+    
     myNestName = data.myNest;
     centerX = data.nestData[myNestName.ordinal()].centerX;
     centerY = data.nestData[myNestName.ordinal()].centerY;
     System.out.println("ClientRandomWalk: ==== Nest Assigned ===>: " + myNestName);
     return data;
   }
-  private void startAllSwarms()
+  
+  /**
+   * Spawns a new based on the score
+   *
+   * @param commData
+   */
+  public void spawnNewAnt(CommData commData)
   {
-    for(Swarm swarm : swarmList)
-    {
-      swarm.start();
-    }
-  }
-  public void spawnNewAnt(CommData commData) {
     int myScore = 0;
     int antCount = commData.myAntList.size() * 10;
     System.out.println("antCount=" + antCount);
-    for (int foodCount : commData.foodStockPile) {
+    for (int foodCount : commData.foodStockPile)
+    {
       myScore += foodCount;
     }
     AntType[] antTypes = {AntType.ATTACK, AntType.DEFENCE, AntType.MEDIC,
             AntType.SPEED, AntType.VISION, AntType.WORKER};
-
+    
     if (myScore >= antCount * scoreToAntRatio)
     {
-      //try: only create speed ants for scouting
       for (AntType antType : antTypes)
       {
-//      System.out.println("getFoodUnitsToSpawn() called on " + antType + "=" + (antType.getFoodUnitsToSpawn(FoodType.MEAT)));
-        //if required food type is achieved for every ant type, respawn it
         if (commData.foodStockPile[FoodType.MEAT.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.MEAT) >= 0 &&
                 commData.foodStockPile[FoodType.NECTAR.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.NECTAR) >= 0 &&
                 commData.foodStockPile[FoodType.SEEDS.ordinal()] - antType.getFoodUnitsToSpawn(FoodType.SEEDS) >= 0)
         {
-//        AntData newAnt = new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam);
-//        newAnt.myAction.type = AntAction.AntActionType.BIRTH;
           commData.myAntList.add(new AntData(Constants.UNKNOWN_ANT_ID, antType, commData.myNest, commData.myTeam));
           swarmAssignNum++;
-          System.out.println("Spawned a new ant, new antList size=" + commData.myAntList.size());
         }
       }
     }
   }
-
+  
+  /**
+   * Contains the main game loop which chooses an action for each ant
+   * for every tick of the server.
+   *
+   * @param data - the current CommData object to be processed
+   */
   public void mainGameLoop(CommData data)
   {
-//    startAllSwarms();
     boolean chooseActionOfAllAntsCompleted = false;
     while (true)
     {
-      testAI.setCommData(data);
       try
       {
-        
         if (!mapIsRead)
         {
           CommData sendData = data.packageForSendToServer();
@@ -382,15 +348,9 @@ public class ClientRandomWalk
           }
           continue;
         }
-
-//        if (mapIsRead)
-//        {
-//          System.exit(1);
-//        }
-        //TODO: check to see if server always places new ant at end/beginning of list to avoid looping
+        
         if (antListSize != data.myAntList.size())
         {
-          System.out.println("Adding newly spawned ant to a list");
           for (AntData antData : data.myAntList)
           {
             for (Swarm swarm : swarmList)
@@ -401,7 +361,7 @@ public class ClientRandomWalk
               }
             }
           }
-
+          
         }
         boolean allSwarmsReady = true;
         for (Swarm swarm : swarmList)
@@ -412,124 +372,95 @@ public class ClientRandomWalk
             break;
           }
         }
-
+        
         if (!chooseActionOfAllAntsCompleted)
         {
           chooseActionsOfAllAnts(data);
           chooseActionOfAllAntsCompleted = true;
         }
-
+        
         if (allSwarmsReady)
         {
           chooseActionsOfAllAnts(data);
-          System.out.println("CLient ready to send data");
-          readyThreadCounter.numThreadsReady = 0;
           spawnNewAnt(data); //try to spawn ants when possible
-
+          
           CommData sendData = data.packageForSendToServer();
-          System.out.println("testAI.antStatusHashMap size=" + testAI.antStatusHashMap.size());
           chooseActionOfAllAntsCompleted = false;
-          System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
+          if (DEBUG)
+          {
+            System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
+          }
           outputStream.writeObject(sendData);
           outputStream.flush();
           outputStream.reset();
-
+          
           //reset swarm's turn status
           for (Swarm swarm : swarmList)
           {
             swarm.turnFinished = false;
           }
-
+          
           if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
           CommData receivedData = (CommData) inputStream.readObject();
           if (DEBUG)
             System.out.println("ClientRandomWalk: received <<<<<<<<<" + inputStream.available() + "<...\n" + receivedData);
           data = receivedData;
-
+          
           if ((myNestName == null) || (data.myTeam != myTeam))
           {
             System.err.println("ClientRandomWalk: !!!!ERROR!!!! " + myNestName);
           }
         }
-      }
-      catch (IOException e)
+      } catch (IOException e)
       {
         System.err.println("ClientRandomWalk***ERROR***: client read failed");
         e.printStackTrace();
         System.exit(0);
-
-      }
-      catch (ClassNotFoundException e)
+        
+      } catch (ClassNotFoundException e)
       {
         System.err.println("ServerToClientConnection***ERROR***: client sent incorrect common format");
         e.printStackTrace();
         System.exit(0);
       }
-
     }
   }
   
-  
   private boolean sendCommData(CommData data)
   {
-    
     CommData sendData = data.packageForSendToServer();
     try
     {
-      if (DEBUG) System.out.println("ClientRandomWalk.sendCommData(" + sendData +")");
+      if (DEBUG) System.out.println("ClientRandomWalk.sendCommData(" + sendData + ")");
       outputStream.writeObject(sendData);
       outputStream.flush();
       outputStream.reset();
-    }
-    catch (IOException e)
+    } catch (IOException e)
     {
       System.err.println("ClientRandomWalk***ERROR***: client read failed");
       e.printStackTrace();
       System.exit(0);
     }
-
+    
     return true;
     
   }
-
+  
   private void chooseActionsOfAllAnts(CommData commData)
   {
     //sets the actions effectively editing the CommData before being sent to the server for each ants
-    testAI.setCommData(commData);
-    //TODO: setting food locations on the map.
-    for(FoodData food : commData.foodSet)
+    for (FoodData food : commData.foodSet)
     {
       world[food.gridX][food.gridY].setFoodType(food.foodType);
-      System.out.println("Food: (" + food.gridX + ", " + food.gridY + "), Count: " + food.count);
     }
-    System.out.println("swarmList.size()=" + swarmList.size());
-//    int runCounter = 0;
-    for(Swarm swarm : swarmList)
+    for (Swarm swarm : swarmList)
     {
-//      System.out.println("runCounter="+runCounter);
       swarm.setCommData(commData);
       executor.execute(swarm);
-//      runCounter++;
-//      swarm.chooseActionForSwarm(commData);
     }
-
-    //WorkerThread wk = new WorkerThread(commData.myAntList, commData);
-    //wk.setIntelligence(testAI);
-    //wk.start();
-
-    /*for (AntData ant : commData.myAntList)
-    {
-      testAI.setAntData(ant);
-      ant.myAction = testAI.chooseAction();
-    }*/
-
   }
-
-
-
-
-
-
+  
+  
   /**
    * The last argument is taken as the host name.
    * The default host is localhost.
@@ -540,7 +471,7 @@ public class ClientRandomWalk
    */
   public static void main(String[] args)
   {
-    String serverHost = "localhost";
+    String serverHost = "foodgame.cs.unm.edu";
     if (args.length > 0) serverHost = args[args.length - 1];
     
     TeamNameEnum team = TeamNameEnum.Arthur_Phil;
@@ -548,7 +479,6 @@ public class ClientRandomWalk
     {
       team = TeamNameEnum.getTeamByString(args[0]);
     }
-    
     new ClientRandomWalk(serverHost, Constants.PORT, team);
   }
   

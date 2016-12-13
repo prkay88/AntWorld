@@ -9,7 +9,7 @@ import java.util.Random;
 /**
  * Created by Phillip on 11/18/2016.
  * This will be the super class that houses all the decision making methods.
- * This class will be extended by particular AI behavoirs.
+ * This class will be extended by particular AI behaviors.
  */
 public class AI
 {
@@ -21,10 +21,14 @@ public class AI
   AntData antData;
   
   public AI()
-  {
-    
-  }
+  {}
   
+  /**
+   * Default AI constructor
+   *
+   * @param commData
+   * @param antData
+   */
   public AI(CommData commData, AntData antData)
   {
     antAction = new AntAction(AntAction.AntActionType.STASIS);
@@ -37,29 +41,9 @@ public class AI
     this.antData = antData;
   }
   
-  public AntAction getAntAction()
-  {
-    return this.antAction;
-  }
-  
-  public void setAntAction(AntAction ant)
-  {
-    this.antAction = ant;
-  }
-  
-  public AntData getAntData()
-  {
-    return this.antData;
-  }
-  
   public void setAntData(AntData antData)
   {
     this.antData = antData;
-  }
-  
-  public CommData getCommData()
-  {
-    return this.commData;
   }
   
   public void setCommData(CommData commData)
@@ -78,16 +62,13 @@ public class AI
   }
   
   
-  //=============================================================================
-  // This method sets the given action to EXIT_NEST if and only if the given
-  //   antAction is underground.
-  // Returns true if an action was set. Otherwise returns false
-  //=============================================================================
+  //////////////////////////////////////////////////////////
+  //See comments on SwarmAI
+  //////////////////////////////////////////////////////////
   public boolean underGroundAction()
   {
     return false;
   }
-  
   
   public boolean attackAdjacent()
   {
@@ -121,7 +102,6 @@ public class AI
   
   public boolean goToGoodAnt()
   {
-    System.out.println("in goToGoodAnt()");
     return false;
   }
   
@@ -130,16 +110,19 @@ public class AI
     return false;
   }
   
-  //Arthur's method. Not needed?
   public boolean goToWater()
   {
     return false;
   }
   
+  /**
+   * Decision tree of the ant
+   *
+   * @return
+   */
   public AntAction chooseAction()
   {
     antAction = new AntAction(AntAction.AntActionType.STASIS);
-//        AntAction action = new AntAction(AntAction.AntActionType.STASIS);
     
     if (antData.ticksUntilNextAction > 0) return this.antAction;
     
@@ -163,5 +146,4 @@ public class AI
     
     return this.antAction;
   }
-  
 }
