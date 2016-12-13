@@ -3,7 +3,7 @@ package antworld.client;
 import antworld.common.CommData;
 
 /**
- * Created by Arthur on 12/5/2016.
+ * Extra thread for reading the map to be used.
  */
 public class WorkerThread extends Thread
 {
@@ -13,7 +13,6 @@ public class WorkerThread extends Thread
   {
     clientRandomWalk = client;
   }
-  
   
   @Override
   public void run()

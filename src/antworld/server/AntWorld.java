@@ -55,8 +55,8 @@ public class AntWorld implements ActionListener
 
     //********************* Note On map replacement  **************************
     //The map must have at least a one pixel a boarder of water: LandType.WATER.getColor.
-    //BufferedImage map = Util.loadImage("AntWorld.png", window);
-    BufferedImage map = Util.loadImage("MediumMap1.png", window);
+    BufferedImage map = Util.loadImage("AntWorld.png", window);
+//    BufferedImage map = Util.loadImage("MediumMap1.png", window);
     worldWidth = map.getWidth();
     worldHeight = map.getHeight();
 
@@ -535,7 +535,7 @@ public class AntWorld implements ActionListener
       lastRestoreTime = wallClock;
     }
   }
-
+  
   private void createFoodSpawnSite()
   {
     int totalSitesToSpawn = 3 + random.nextInt(3);
@@ -545,7 +545,7 @@ public class AntWorld implements ActionListener
       int spawnX = random.nextInt(xRange);
       spawnX = spawnX + (totalSitesToSpawn-1)*xRange;
       int spawnY = random.nextInt(worldHeight);
-
+      
       if (world[spawnX][spawnY].getLandType() == LandType.GRASS)
       {
         FoodType foodType;

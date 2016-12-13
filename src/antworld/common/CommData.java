@@ -27,7 +27,7 @@ public class CommData implements Serializable
   public volatile String errorMsg = null;
 
   /** The my nest. */
-  public volatile NestNameEnum myNest;
+  public volatile NestNameEnum myNest; //uncomment for proper behavior;
   
   /** The my team. */
   public volatile TeamNameEnum myTeam;

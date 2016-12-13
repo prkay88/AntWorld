@@ -508,4 +508,9 @@ public class Swarm extends Thread
     }
     
   }
+  
+  public HashSet<Integer> getAntIdSet()
+  {
+    return antIdSet;
+  }
 }
