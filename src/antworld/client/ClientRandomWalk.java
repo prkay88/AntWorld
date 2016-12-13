@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
  */
 public class ClientRandomWalk
 {
-  private static final boolean DEBUG = true;
+  private static final boolean DEBUG = false;
   private final TeamNameEnum myTeam;
   private static final long password = 962740848319L;//Each team has been assigned a random password.
   private ObjectInputStream inputStream = null;
@@ -471,7 +471,7 @@ public class ClientRandomWalk
    */
   public static void main(String[] args)
   {
-    String serverHost = "localhost";
+    String serverHost = "foodgame.cs.unm.edu";
     if (args.length > 0) serverHost = args[args.length - 1];
     
     TeamNameEnum team = TeamNameEnum.Arthur_Phil;

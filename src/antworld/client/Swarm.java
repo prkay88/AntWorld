@@ -1,9 +1,6 @@
 package antworld.client;
 
-import antworld.common.AntData;
-import antworld.common.CommData;
-import antworld.common.LandType;
-import antworld.common.Util;
+import antworld.common.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -373,7 +370,7 @@ public class Swarm extends Thread
         {
           intellegence.setAntData(antData);
           antData.myAction = intellegence.chooseAction();
-          foodCount += antData.carryUnits;
+          if (antData.carryType != FoodType.WATER) foodCount += antData.carryUnits;
           if (antData.health <= minHealthOfAnt) numOfHurtAnts++;
         }
       }
