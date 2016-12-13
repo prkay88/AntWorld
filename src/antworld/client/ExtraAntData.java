@@ -30,6 +30,7 @@ public class ExtraAntData
   int targetAntId = -2;
   int targetFoodX;
   int targetFoodY;
+  int timeStuck = 0;
   
   /**
    * Creates a new ExtraAntData object with an initial direction.

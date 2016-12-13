@@ -117,11 +117,17 @@ public class SwarmAI extends AI
     }
     if (positionTaken(antData.gridX + currentDirection.deltaX(), antData.gridY + currentDirection.deltaY()))
     {
-      antStatusHashMap.get(antData.id).updateRoamingDirection();
-      
+      int timeStuck = ++antStatusHashMap.get(antData.id).timeStuck;
+//      antStatusHashMap.get(antData.id).updateRoamingDirection();
+      antAction.direction = Direction.getRandomDir();
+      if (timeStuck == 10)
+      {
+        antAction.direction = flipDirection(antStatusHashMap.get(antData.id).mainDirection);
+        antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
+        antStatusHashMap.get(antData.id).timeStuck = 0;
+      }
+      return true;
     }
-    
-    
     antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
     //Changes the main direction randomly 5% of time, to try to spread out swarms a bit more
 //    if(random.nextDouble()<=.05)
@@ -130,6 +136,18 @@ public class SwarmAI extends AI
 //      antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
 //    }
     return true;
+  }
+  
+  private Direction flipDirection(Direction direction)
+  {
+    if (direction == Direction.EAST) return Direction.WEST;
+    if (direction == Direction.WEST) return Direction.EAST;
+    if (direction == Direction.NORTH) return Direction.SOUTH;
+    if (direction == Direction.SOUTH) return Direction.NORTH;
+    if (direction == Direction.NORTHEAST) return Direction.SOUTHWEST;
+    if (direction == Direction.NORTHWEST) return Direction.SOUTHEAST;
+    if (direction == Direction.SOUTHWEST) return Direction.NORTHEAST;
+    else return Direction.NORTHWEST;
   }
   
   /**
@@ -439,12 +457,11 @@ public class SwarmAI extends AI
   @Override
   public boolean pickUpWater()
   {
-    
     int antX = antData.gridX;
     int antY = antData.gridY;
     ClientCell[][] world = ClientRandomWalk.world;
     antAction.quantity = 15;
-    if (commData.foodStockPile[FoodType.WATER.ordinal()] > -10)
+    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 100)
     {
       if (world[antX][antY - 1].landType == LandType.WATER)
       {
