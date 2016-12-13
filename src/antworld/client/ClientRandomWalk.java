@@ -78,10 +78,16 @@ public class ClientRandomWalk
   private void assignAntsToSwarm(CommData commData)
   {
     int swarmNum;
+    int count=0;
     for(AntData antData : commData.myAntList)
     {
+
       swarmNum = antData.id % 4;
       swarmList.get(swarmNum).addAntToIDSet(antData);
+      if(count <5) swarmList.get(swarmNum).swarmLocationMap.put(antData.id, 0);
+      if(count >=5 && count <12) swarmList.get(swarmNum).swarmLocationMap.put(antData.id, 1);
+      if(count >=12) swarmList.get(swarmNum).swarmLocationMap.put(antData.id, 2);
+      count++;
     }
   }
 
@@ -197,7 +203,7 @@ public class ClientRandomWalk
 //      mapName = "MediumMap1.PNG";
 ////      mapName = "SmallMap1.png";
 //    }
-    //mapName = "AntWorld.png";
+    mapName = "AntWorld.png";
     BufferedImage map = Util.loadImage(mapName, null);
 //    BufferedImage map = Util.loadImage("TestReadMap.png", null);
     System.out.println("Is map null? map=" + map);
@@ -534,7 +540,7 @@ public class ClientRandomWalk
    */
   public static void main(String[] args)
   {
-    String serverHost = "localhost";
+    String serverHost = "foodgame.cs.unm.edu";
     if (args.length > 0) serverHost = args[args.length -1];
 
     TeamNameEnum team = TeamNameEnum.Arthur_Phil;

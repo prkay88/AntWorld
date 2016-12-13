@@ -106,11 +106,51 @@ public class SwarmAI extends AI
     antAction.direction = currentDirection;
     //System.out.println("in goExplore, antAction.direction = " + antAction.direction);
     //TODO: uncomment for Phil's proper swarm behavior
-    if (!mySwarm.insideOuterRadius(antData.gridX + antAction.direction.deltaX(), antData.gridY + antAction.direction.deltaY()))
+    if (mySwarm.swarmLocationMap.get(antData.id) == 0)
     {
-      antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY());
-      //System.out.println("In goExplore(): the ant is not inside the outerRadius");
-      antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
+      if(!mySwarm.insideInnerRadius( antData.gridX, antData.gridY))
+      {
+        antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY());
+        //System.out.println("In goExplore(): the ant is not inside the outerRadius");
+        antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
+      }
+      else
+      {
+        antStatusHashMap.get(antData.id).updateRoamingDirection();
+        antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
+      }
+
+
+      return true;
+    }
+    else if(mySwarm.swarmLocationMap.get(antData.id) == 1)
+    {
+      if(!mySwarm.insideMiddleRadius(antData.gridX, antData.gridY))
+      {
+        antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY());
+        //System.out.println("In goExplore(): the ant is not inside the outerRadius");
+        antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
+      }
+      else
+      {
+        antStatusHashMap.get(antData.id).updateRoamingDirection();
+        antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
+      }
+      return true;
+    }
+    else if(mySwarm.swarmLocationMap.get(antData.id) == 2)
+    {
+      if(!mySwarm.insideOuterRadius( antData.gridX, antData.gridY))
+      {
+        antAction = chooseDirection(antData.gridX, antData.gridY, mySwarm.getCenterX(), mySwarm.getCenterY());
+        //System.out.println("In goExplore(): the ant is not inside the outerRadius");
+        antStatusHashMap.get(antData.id).mainDirection = antAction.direction;
+      }
+      else
+      {
+        antStatusHashMap.get(antData.id).updateRoamingDirection();
+        antAction.direction = antStatusHashMap.get(antData.id).mainDirection;
+      }
       return true;
     }
     //TODO: uncomment for A*
