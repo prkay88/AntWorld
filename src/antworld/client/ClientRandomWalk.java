@@ -191,7 +191,7 @@ public class ClientRandomWalk
 
   public void createMap()
   {
-    String mapName = "AntWorld.png";
+    String mapName = "MediumMap1.png";
 //    if (debug)
 //    {
 //      mapName = "MediumMap1.PNG";
@@ -305,7 +305,7 @@ public class ClientRandomWalk
       System.exit(0);
     }
 
-    myNestName = data.myNest; 
+    myNestName = data.myNest;
     centerX = data.nestData[myNestName.ordinal()].centerX;
     centerY = data.nestData[myNestName.ordinal()].centerY;
     System.out.println("ClientRandomWalk: ==== Nest Assigned ===>: " + myNestName);
