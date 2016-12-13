@@ -377,6 +377,12 @@ public class Swarm extends Thread
           if (antData.health <= minHealthOfAnt) numOfHurtAnts++;
         }
       }
+      if (ClientRandomWalk.world[centerX][centerY].landType == LandType.WATER)
+      {
+        ClientCell newTargetNest = nestCenterCells.get(random.nextInt(nestCenterCells.size())-1);
+        enemyNestX = newTargetNest.x;
+        enemyNestY = newTargetNest.y;
+      }
       if (goingTowardsEnemyNest && foodCount < foodUnitsToReturn && numOfHurtAnts < numOfHurtAntsThreshold)
       {
         if (!foundSwarmTarget(enemyNestX, enemyNestY)) moveTowardsEnemyNest();

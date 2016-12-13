@@ -438,8 +438,8 @@ public class SwarmAI extends AI
     int antX = antData.gridX;
     int antY = antData.gridY;
     ClientCell[][] world = ClientRandomWalk.world;
-    antAction.quantity = 2;
-    if (commData.foodStockPile[FoodType.WATER.ordinal()] < 100)
+    antAction.quantity = 15;
+    if (commData.foodStockPile[FoodType.WATER.ordinal()] > -10)
     {
       if (world[antX][antY - 1].landType == LandType.WATER)
       {

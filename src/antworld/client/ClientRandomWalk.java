@@ -471,7 +471,7 @@ public class ClientRandomWalk
    */
   public static void main(String[] args)
   {
-    String serverHost = "foodgame.cs.unm.edu";
+    String serverHost = "localhost";
     if (args.length > 0) serverHost = args[args.length - 1];
     
     TeamNameEnum team = TeamNameEnum.Arthur_Phil;
