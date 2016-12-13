@@ -379,7 +379,7 @@ public class Swarm extends Thread
       }
       if (ClientRandomWalk.world[centerX][centerY].landType == LandType.WATER)
       {
-        ClientCell newTargetNest = nestCenterCells.get(random.nextInt(nestCenterCells.size())-1);
+        ClientCell newTargetNest = nestCenterCells.get(random.nextInt(nestCenterCells.size()));
         enemyNestX = newTargetNest.x;
         enemyNestY = newTargetNest.y;
       }
